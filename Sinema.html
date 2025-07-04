@@ -200,7 +200,9 @@
             appId: "1:75259418247:web:6bf046a8f913ebd1be4a22",
             measurementId: "G-4ZXXQ124RH"
         };
-        const appId = 'filmgunlugum-81fba';
+        
+        // UPDATED: Use the environment variable for appId if it exists
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'filmgunlugum-81fba';
         
         let app, auth, db, userId;
         let watchedMoviesList = [];
@@ -326,7 +328,6 @@
         function setupListeners() {
             if (!userId) return;
 
-            // Settings Listener
             const settingsDocRef = doc(db, 'artifacts', appId, 'users', userId, 'settings', 'profile');
             unsubscribeSettings = onSnapshot(settingsDocRef, (docSnap) => {
                 const settings = docSnap.exists() ? docSnap.data() : {};
@@ -337,7 +338,6 @@
                 userNameDisplay.classList.toggle('hidden', !fullName);
             });
             
-            // Movies Listener
             const listLoader = document.getElementById('list-loader');
             listLoader.classList.remove('hidden');
             const moviesCollectionPath = collection(db, 'artifacts', appId, 'users', userId, 'movies');
@@ -667,4 +667,3 @@
     </script>
 </body>
 </html>
-
