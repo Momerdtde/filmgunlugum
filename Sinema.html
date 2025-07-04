@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Film Günlüğüm</title>
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Cropper.js for image cropping -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+
+    <!-- Custom Styles -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .tab-btn.active {
+            background-color: #0891b2;
+            color: white;
+        }
+        .tab-btn {
+            transition: background-color 0.3s ease;
+        }
+        #imageInput {
+            display: none;
+        }
+        #cropModal {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        #cropImageContainer {
+            max-width: 90vw;
+            max-height: 70vh;
+        }
+        #cropImage {
+            max-width: 100%;
+            max-height: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white antialiased">
+
+    <!-- Authentication Container -->
+    <div id="authContainer" class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-md">
+            <!-- Login Form -->
+            <div id="loginFormContainer">
+                <form id="loginForm" class="bg-gray-800 p-8 rounded-xl shadow-lg">
+                    <h2 class="text-3xl font-bold text-center text-cyan-400 mb-6">Giriş Yap</h2>
+                    <div class="mb-4">
+                        <label for="loginEmail" class="block text-gray-400 mb-2">E-posta</label>
+                        <input type="email" id="loginEmail" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500" required>
+                    </div>
+                    <div class="mb-6">
+                        <label for="loginPassword" class="block text-gray-400 mb-2">Şifre</label>
+                        <input type="password" id="loginPassword" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500" required>
+                    </div>
+                    <button type="submit" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-6 rounded-lg transition-colors">Giriş Yap</button>
+                    <p class="text-center text-gray-400 mt-6">
+                        Hesabın yok mu? <a href="#" id="showRegister" class="text-cyan-400 hover:underline">Hesap Oluştur</a>
+                    </p>
+                </form>
+            </div>
+            <!-- Registration Form -->
+            <div id="registerFormContainer" class="hidden">
+                <form id="registerForm" class="bg-gray-800 p-8 rounded-xl shadow-lg">
+                    <h2 class="text-3xl font-bold text-center text-cyan-400 mb-6">Hesap Oluştur</h2>
+                    <div class="mb-4">
+                        <label for="registerEmail" class="block text-gray-400 mb-2">E-posta</label>
+                        <input type="email" id="registerEmail" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500" required>
+                    </div>
+                    <div class="mb-6">
+                        <label for="registerPassword" class="block text-gray-400 mb-2">Şifre</label>
+                        <input type="password" id="registerPassword" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500" required>
+                    </div>
+                    <button type="submit" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-6 rounded-lg transition-colors">Hesap Oluştur</button>
+                    <p class="text-center text-gray-400 mt-6">
+                        Zaten hesabın var mı? <a href="#" id="showLogin" class="text-cyan-400 hover:underline">Giriş Yap</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container (hidden by default) -->
+    <div id="appContainer" class="container mx-auto p-4 md:p-8 max-w-4xl mb-24 hidden">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-cyan-400">Film Günlüğüm</h1>
+            <p id="userEmailDisplay" class="text-gray-400 mt-2"></p>
+            <h2 id="userNameDisplay" class="text-2xl text-gray-300 mt-4 hidden"></h2>
+            <button id="logoutBtn" class="mt-4 text-sm text-red-400 hover:underline">Çıkış Yap</button>
+        </header>
+
+        <div class="mb-8 border-b border-gray-700">
+            <nav class="flex space-x-4" aria-label="Tabs">
+                <button id="mainTabBtn" class="tab-btn active font-medium px-4 py-2 text-gray-300 rounded-t-lg">Film Günlüğüm</button>
+                <button id="settingsTabBtn" class="tab-btn font-medium px-4 py-2 text-gray-300 rounded-t-lg">Ayarlar</button>
+            </nav>
+        </div>
+
+        <main>
+            <div id="mainContent">
+                <div id="mainHeaderImageContainer" class="mb-8 rounded-xl shadow-lg overflow-hidden hidden">
+                    <img id="mainHeaderImageDisplay" src="" alt="Başlık Resmi" class="w-full h-64 object-cover">
+                </div>
+                <div class="mb-8 p-6 bg-gray-800 rounded-xl shadow-lg">
+                    <h2 class="text-2xl font-semibold mb-4 text-white">Yeni Film Ekle</h2>
+                    <form id="searchForm" class="flex flex-col sm:flex-row gap-4">
+                        <input type="text" id="searchInput" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white" placeholder="TMDb'de ara..." required>
+                        <button type="submit" class="w-full sm:w-auto bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-6 rounded-lg">Ara</button>
+                    </form>
+                </div>
+                <div id="searchResults" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8"></div>
+                <div id="search-loader" class="text-center hidden"><p>Aranıyor...</p></div>
+                <div>
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4 border-b-2 border-gray-700 pb-4">
+                        <h2 class="text-3xl font-bold text-white">İzlediklerim</h2>
+                    </div>
+                    <div class="flex flex-col md:flex-row gap-4 mb-6">
+                        <input type="text" id="filterInput" class="w-full md:w-2/3 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Listemde ara...">
+                        <select id="genreFilter" class="w-full md:w-1/3 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                            <option value="">Tüm Türler</option>
+                        </select>
+                    </div>
+                    <div id="watchedList" class="space-y-6"></div>
+                    <div id="list-loader" class="text-center mt-8"><p>Listeniz yükleniyor...</p></div>
+                    <p id="no-filter-results" class="text-center hidden mt-6">Arama kriterlerinize uygun film bulunamadı.</p>
+                </div>
+            </div>
+
+            <div id="settingsContent" class="hidden">
+                <div id="settingsSection" class="mb-8 p-6 bg-gray-800 rounded-xl shadow-lg">
+                    <h2 class="text-2xl font-semibold mb-4 text-white">Kullanıcı Bilgileri</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="firstNameInput" placeholder="Adınız" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <input type="text" id="lastNameInput" placeholder="Soyadınız" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <button id="saveSettingsBtn" class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg">Bilgileri Kaydet</button>
+                </div>
+                <div id="headerImageSection" class="mb-8 p-6 bg-gray-800 rounded-xl shadow-lg">
+                     <h2 class="text-2xl font-semibold mb-4 text-white">Başlık Resmi (Geçici)</h2>
+                    <div id="image-loader" class="text-center hidden py-4"><p>İşlem yapılıyor...</p></div>
+                    <div id="image-content">
+                        <div class="w-full h-64 bg-gray-700 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+                            <img id="headerImagePreview" src="https://placehold.co/800x400/1f2937/4b5563?text=Resim+Y%C3%BCkle" alt="Header Image Preview" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <label for="imageInput" class="cursor-pointer w-full sm:w-auto flex-grow text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg">Yeni Resim Seç</label>
+                            <input type="file" id="imageInput" accept="image/*">
+                            <button id="deleteImageBtn" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg">Resmi Kaldır</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="bulkAddSection" class="mb-8 p-6 bg-gray-800 rounded-xl shadow-lg">
+                    <h2 class="text-2xl font-semibold mb-4 text-white">Toplu Film Ekle</h2>
+                    <p class="text-gray-400 mb-4">Google Keep veya başka bir yerden kopyaladığınız film listenizi (her film yeni bir satırda olacak şekilde) aşağıdaki alana yapıştırın.</p>
+                    <textarea id="bulkAddTextarea" class="w-full h-48 p-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Inception&#10;The Matrix - Yönetmen: Wachowskis&#10;Parasite..."></textarea>
+                    <button id="bulkAddBtn" class="mt-4 w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-6 rounded-lg">Listeyi İçe Aktar</button>
+                    <div id="bulkAddStatus" class="mt-4 text-sm text-gray-400"></div>
+                </div>
+                <div id="dataManagementSection" class="p-6 bg-gray-800 rounded-xl shadow-lg">
+                    <h2 class="text-2xl font-semibold mb-4 text-white">Veri Yönetimi</h2>
+                    <button id="exportBtn" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-6 rounded-lg">Listeyi Dışa Aktar (CSV)</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="cropModal" class="fixed inset-0 w-full h-full bg-black bg-opacity-75 flex items-center justify-center hidden z-50">
+        <div class="bg-gray-800 p-6 rounded-lg shadow-xl"><h3 class="text-xl font-semibold mb-4">Resmi Kırp</h3><div id="cropImageContainer" class="mb-4"><img id="cropImage" src=""></div><div class="flex justify-end gap-4"><button id="cancelCropBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">İptal</button><button id="saveCropBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Kırp ve Ayarla</button></div></div>
+    </div>
+    <div id="notification" class="fixed bottom-5 right-5 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg opacity-0 transition-opacity duration-300"><p id="notification-message"></p></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, updateDoc, query, setLogLevel, getDoc, setDoc, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        const TMDB_API_KEY = 'be3431f83282ebf814b6db565e75105d';
+        const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+
+        // UPDATED: Replaced placeholder with your actual Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAEgd5WVdDQxFFDUkTw7Kt1qqDbWQdmBo8",
+            authDomain: "filmgunlugum-81fba.firebaseapp.com",
+            projectId: "filmgunlugum-81fba",
+            storageBucket: "filmgunlugum-81fba.appspot.com", // Corrected storageBucket format
+            messagingSenderId: "75259418247",
+            appId: "1:75259418247:web:6bf046a8f913ebd1be4a22",
+            measurementId: "G-4ZXXQ124RH"
+        };
+        const appId = 'filmgunlugum-81fba'; // Using projectId as appId
+        
+        let app, auth, db, userId;
+        let watchedMoviesList = [];
+        let cropper = null;
+
+        setLogLevel('debug');
+
+        // --- DOM ELEMENTS ---
+        const authContainer = document.getElementById('authContainer');
+        const appContainer = document.getElementById('appContainer');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const showRegister = document.getElementById('showRegister');
+        const showLogin = document.getElementById('showLogin');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userEmailDisplay = document.getElementById('userEmailDisplay');
+        const userNameDisplay = document.getElementById('userNameDisplay');
+        const mainTabBtn = document.getElementById('mainTabBtn');
+        const settingsTabBtn = document.getElementById('settingsTabBtn');
+        const mainContent = document.getElementById('mainContent');
+        const settingsContent = document.getElementById('settingsContent');
+        const mainHeaderImageContainer = document.getElementById('mainHeaderImageContainer');
+        const mainHeaderImageDisplay = document.getElementById('mainHeaderImageDisplay');
+        const firstNameInput = document.getElementById('firstNameInput');
+        const lastNameInput = document.getElementById('lastNameInput');
+        const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+        const headerImagePreview = document.getElementById('headerImagePreview');
+        const imageInput = document.getElementById('imageInput');
+        const deleteImageBtn = document.getElementById('deleteImageBtn');
+        const cropModal = document.getElementById('cropModal');
+        const cropImage = document.getElementById('cropImage');
+        const cancelCropBtn = document.getElementById('cancelCropBtn');
+        const saveCropBtn = document.getElementById('saveCropBtn');
+        const searchForm = document.getElementById('searchForm');
+        const watchedListContainer = document.getElementById('watchedList');
+        const filterInput = document.getElementById('filterInput');
+        const genreFilter = document.getElementById('genreFilter');
+        const noFilterResults = document.getElementById('no-filter-results');
+        const exportBtn = document.getElementById('exportBtn');
+        const bulkAddTextarea = document.getElementById('bulkAddTextarea');
+        const bulkAddBtn = document.getElementById('bulkAddBtn');
+        const bulkAddStatus = document.getElementById('bulkAddStatus');
+        const placeholderImage = 'https://placehold.co/800x400/1f2937/4b5563?text=Resim+Y%C3%BCkle';
+
+        // --- APP INITIALIZATION ---
+        (async () => {
+            try {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                
+                await setPersistence(auth, browserLocalPersistence);
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        authContainer.classList.add('hidden');
+                        appContainer.classList.remove('hidden');
+                        userEmailDisplay.textContent = `Giriş yapıldı: ${user.email}`;
+                        loadUserSettings();
+                        loadWatchedMovies();
+                    } else {
+                        userId = null;
+                        authContainer.classList.remove('hidden');
+                        appContainer.classList.add('hidden');
+                        watchedListContainer.innerHTML = '';
+                    }
+                });
+
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                showNotification("Uygulama başlatılamadı. Lütfen tekrar deneyin.", true);
+            }
+        })();
+
+
+        // --- AUTHENTICATION LOGIC ---
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = loginForm.loginEmail.value;
+            const password = loginForm.loginPassword.value;
+            signInWithEmailAndPassword(auth, email, password)
+                .catch(error => showNotification(getAuthErrorMessage(error.code), true));
+        });
+
+        registerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = registerForm.registerEmail.value;
+            const password = registerForm.registerPassword.value;
+            createUserWithEmailAndPassword(auth, email, password)
+                .catch(error => showNotification(getAuthErrorMessage(error.code), true));
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        showRegister.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('loginFormContainer').classList.add('hidden');
+            document.getElementById('registerFormContainer').classList.remove('hidden');
+        });
+
+        showLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('loginFormContainer').classList.remove('hidden');
+            document.getElementById('registerFormContainer').classList.add('hidden');
+        });
+
+        // --- TAB NAVIGATION LOGIC ---
+        function showMainTab() {
+            mainContent.classList.remove('hidden');
+            settingsContent.classList.add('hidden');
+            mainTabBtn.classList.add('active');
+            settingsTabBtn.classList.remove('active');
+        }
+
+        function showSettingsTab() {
+            mainContent.classList.add('hidden');
+            settingsContent.classList.remove('hidden');
+            mainTabBtn.classList.remove('active');
+            settingsTabBtn.classList.add('active');
+        }
+
+        // --- USER SETTINGS FUNCTIONS ---
+        function loadUserSettings() {
+            if (!userId) return;
+            const settingsDocRef = doc(db, 'artifacts', appId, 'users', userId, 'settings', 'profile');
+            onSnapshot(settingsDocRef, (docSnap) => {
+                const settings = docSnap.exists() ? docSnap.data() : {};
+                if (document.activeElement !== firstNameInput) firstNameInput.value = settings.firstName || '';
+                if (document.activeElement !== lastNameInput) lastNameInput.value = settings.lastName || '';
+                const fullName = [settings.firstName, settings.lastName].filter(Boolean).join(' ');
+                userNameDisplay.textContent = fullName;
+                userNameDisplay.classList.toggle('hidden', !fullName);
+            });
+        }
+
+        async function saveUserSettings() {
+            if (!userId) return;
+            const settingsDocRef = doc(db, 'artifacts', appId, 'users', userId, 'settings', 'profile');
+            const settingsData = { firstName: firstNameInput.value.trim(), lastName: lastNameInput.value.trim() };
+            try {
+                await setDoc(settingsDocRef, settingsData, { merge: true });
+                showNotification("Kullanıcı bilgileri kaydedildi!", false);
+            } catch (error) {
+                showNotification("Ayarlar kaydedilirken hata oluştu.", true);
+            }
+        }
+        
+        function updateHeaderImages(url) {
+            const imageUrl = url || placeholderImage;
+            headerImagePreview.src = imageUrl;
+            mainHeaderImageDisplay.src = imageUrl;
+            mainHeaderImageContainer.classList.toggle('hidden', !url || url === placeholderImage);
+        }
+
+        // --- HEADER IMAGE & CROPPER FUNCTIONS (Client-Side Only) ---
+        function openCropModal(imageSrc) {
+            cropModal.classList.remove('hidden');
+            cropImage.src = imageSrc;
+            cropper = new Cropper(cropImage, { aspectRatio: 16 / 6, viewMode: 1, background: false, autoCropArea: 1 });
+        }
+
+        function closeCropModal() {
+            cropModal.classList.add('hidden');
+            if (cropper) { cropper.destroy(); cropper = null; }
+            imageInput.value = '';
+        }
+
+        function saveCroppedImage() {
+            if (!cropper) return;
+            const canvas = cropper.getCroppedCanvas({ width: 1200, imageSmoothingQuality: 'high' });
+            closeCropModal();
+            if (!canvas) { showNotification("Resim kırpılırken bir hata oluştu.", true); return; }
+            updateHeaderImages(canvas.toDataURL('image/jpeg'));
+            showNotification("Başlık resmi bu oturum için ayarlandı (Kalıcı değil).", false);
+        }
+        
+        function handleImageDelete() {
+            if (!window.confirm("Başlık resmini kaldırmak istediğinizden emin misiniz?")) return;
+            updateHeaderImages(null);
+            showNotification("Resim bu oturum için kaldırıldı.", false);
+        }
+
+        // --- TMDB API & FIRESTORE FUNCTIONS ---
+        async function searchMovies(query) {
+            if (!TMDB_API_KEY) { showNotification("TMDb API anahtarı eksik.", true); return null; }
+            const searchResultsContainer = document.getElementById('searchResults');
+            const searchLoader = document.getElementById('search-loader');
+            searchResultsContainer.innerHTML = '';
+            searchLoader.classList.remove('hidden');
+            const url = `${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&language=tr-TR&include_adult=false`;
+            try {
+                const response = await fetch(url);
+                if (!response.ok) return null;
+                return await response.json();
+            } catch (error) { console.error('Error fetching movies:', error); return null; } 
+            finally { searchLoader.classList.add('hidden'); }
+        }
+
+        function displaySearchResults(movies) {
+            const searchResultsContainer = document.getElementById('searchResults');
+            searchResultsContainer.innerHTML = '';
+            if (!movies || movies.length === 0) { searchResultsContainer.innerHTML = `<p class="col-span-full text-center">Sonuç bulunamadı.</p>`; return; }
+            movies.slice(0, 8).forEach(movie => {
+                const posterPath = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';
+                const releaseYear = movie.release_date ? movie.release_date.split('-')[0] : 'N/A';
+                const movieCard = `<div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg movie-card flex flex-col"><div class="w-full h-64 bg-gray-700 flex items-center justify-center"><img src="${posterPath}" alt="${movie.title}" class="w-full h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';"></div><div class="p-4 flex flex-col flex-grow"><h3 class="font-bold text-lg text-white">${movie.title}</h3><p class="text-gray-400 text-sm mb-4">${releaseYear}</p><button class="add-movie-btn mt-auto w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg" data-tmdb-id="${movie.id}" data-title="${encodeURIComponent(movie.title)}" data-poster-path="${movie.poster_path || ''}" data-release-year="${releaseYear}">Listeye Ekle</button></div></div>`;
+                searchResultsContainer.innerHTML += movieCard;
+            });
+        }
+        
+        async function getMovieDetails(tmdbId) {
+            if (!TMDB_API_KEY) return null;
+            const url = `${TMDB_BASE_URL}/movie/${tmdbId}?api_key=${TMDB_API_KEY}&language=tr-TR&append_to_response=watch/providers`;
+            try { const response = await fetch(url); return await response.json(); } catch (error) { return null; }
+        }
+
+        function loadWatchedMovies() {
+            if (!userId) return;
+            const listLoader = document.getElementById('list-loader');
+            listLoader.classList.remove('hidden');
+            const moviesCollectionPath = collection(db, 'artifacts', appId, 'users', userId, 'movies');
+            onSnapshot(query(moviesCollectionPath), (snapshot) => {
+                listLoader.classList.add('hidden');
+                watchedMoviesList = [];
+                snapshot.forEach(doc => watchedMoviesList.push({ id: doc.id, ...doc.data() }));
+                watchedMoviesList.sort((a, b) => a.title.localeCompare(b.title));
+                populateGenreFilter();
+                filterAndDisplayWatchedMovies();
+                if(snapshot.empty) { watchedListContainer.innerHTML = `<div class="text-center py-10 px-6 bg-gray-800 rounded-lg"><p>Henüz izlediğiniz bir film eklemediniz.</p></div>`; }
+            }, (error) => { console.error("Error listening to movie collection:", error); });
+        }
+
+        function displayWatchedMovie(movie) {
+            const posterPath = movie.posterPath ? `https://image.tmdb.org/t/p/w500${movie.posterPath}` : 'https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';
+            const movieElement = document.createElement('div');
+            movieElement.className = 'movie-card bg-gray-800 rounded-lg shadow-xl overflow-hidden flex flex-col md:flex-row';
+            const genreTags = movie.genres && movie.genres.length > 0 ? movie.genres.map(genre => `<span class="bg-purple-600 text-white text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">${genre}</span>`).join('') : `<span class="bg-gray-600 text-gray-200 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">Film</span>`;
+            let providersHtml = '';
+            if (movie.watchProviders && movie.watchProviders.length > 0) {
+                const providerLogos = movie.watchProviders.map(p => `<img src="https://image.tmdb.org/t/p/w45${p.logo_path}" alt="${p.provider_name}" title="${p.provider_name}" class="w-8 h-8 rounded-md">`).join('');
+                providersHtml = `<div class="mt-4"><p class="text-xs text-gray-400 mb-1">Platformlar (TR):</p><div class="flex flex-wrap gap-2">${providerLogos}</div></div>`;
+            }
+            movieElement.innerHTML = `<div class="w-full md:w-48 bg-gray-700 flex-shrink-0 flex items-center justify-center"><img src="${posterPath}" alt="${movie.title}" class="w-full h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';"></div><div class="p-6 flex flex-col flex-grow"><div class="flex-shrink-0"><h3 class="text-2xl font-bold text-white">${movie.title}</h3><div class="flex items-center flex-wrap gap-y-2 my-2">${genreTags}</div><p class="text-gray-400 mb-2">${movie.releaseYear}</p>${providersHtml}</div><textarea class="notes-textarea w-full h-24 p-3 mt-4 bg-gray-700 border border-gray-600 rounded-lg" data-doc-id="${movie.id}" placeholder="Bu filmle ilgili notların...">${movie.notes || ''}</textarea><div class="mt-auto pt-4 flex flex-col sm:flex-row gap-3"><button class="save-notes-btn w-full sm:w-auto flex-grow bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg" data-doc-id="${movie.id}">Notları Kaydet</button><button class="delete-movie-btn w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg" data-doc-id="${movie.id}">Filmi Sil</button></div></div>`;
+            watchedListContainer.appendChild(movieElement);
+        }
+
+        async function addMovieToFirestore(movieData) {
+            if (!userId) return 'error';
+            const moviesCollection = collection(db, 'artifacts', appId, 'users', userId, 'movies');
+            const q = query(moviesCollection, where("tmdbId", "==", movieData.tmdbId));
+            const querySnapshot = await getDocs(q);
+            if (!querySnapshot.empty) { return 'duplicate'; }
+            const details = await getMovieDetails(movieData.tmdbId);
+            movieData.genres = details && details.genres ? details.genres.map(g => g.name) : [];
+            let providers = [];
+            if (details && details['watch/providers'] && details['watch/providers'].results && details['watch/providers'].results.TR && details['watch/providers'].results.TR.flatrate) {
+                providers = details['watch/providers'].results.TR.flatrate.map(p => ({ provider_id: p.provider_id, provider_name: p.provider_name, logo_path: p.logo_path }));
+            }
+            movieData.watchProviders = providers;
+            try { await addDoc(moviesCollection, movieData); return 'success'; } catch (error) { return 'error'; }
+        }
+
+        async function updateNotesInFirestore(docId, notes) {
+            if (!userId) return;
+            try { await updateDoc(doc(db, 'artifacts', appId, 'users', userId, 'movies', docId), { notes: notes }); showNotification("Notlar kaydedildi!", false); } catch (error) { console.error("Error updating notes: ", error); }
+        }
+
+        async function deleteMovieFromFirestore(docId) {
+            if (!userId || !window.confirm("Bu filmi silmek istediğinizden emin misiniz?")) return;
+            try { await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'movies', docId)); showNotification("Film başarıyla silindi.", false); } catch (error) { console.error("Error deleting document: ", error); }
+        }
+        
+        function populateGenreFilter() {
+            const allGenres = new Set();
+            watchedMoviesList.forEach(movie => { if(movie.genres) movie.genres.forEach(genre => allGenres.add(genre)); });
+            genreFilter.innerHTML = '<option value="">Tüm Türler</option>';
+            Array.from(allGenres).sort().forEach(genre => { const option = document.createElement('option'); option.value = genre; option.textContent = genre; genreFilter.appendChild(option); });
+        }
+
+        function filterAndDisplayWatchedMovies() {
+            const filterText = filterInput.value.toLowerCase();
+            const selectedGenre = genreFilter.value;
+            const filteredMovies = watchedMoviesList.filter(movie => movie.title.toLowerCase().includes(filterText) && (!selectedGenre || (movie.genres && movie.genres.includes(selectedGenre))));
+            watchedListContainer.innerHTML = '';
+            if (filteredMovies.length > 0) { filteredMovies.forEach(displayWatchedMovie); }
+            noFilterResults.style.display = filteredMovies.length === 0 && watchedMoviesList.length > 0 ? 'block' : 'none';
+        }
+        
+        function exportToCSV() {
+            if (watchedMoviesList.length === 0) { showNotification("Dışa aktarılacak film yok.", true); return; }
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += ["Başlık", "Yıl", "Türler", "Notlar"].join(",") + "\r\n";
+            watchedMoviesList.forEach(movie => {
+                const row = [`"${movie.title.replace(/"/g, '""')}"`, movie.releaseYear, `"${movie.genres ? movie.genres.join(', ') : ''}"`, `"${movie.notes ? movie.notes.replace(/"/g, '""').replace(/\n/g, ' ') : ''}"`].join(",");
+                csvContent += row + "\r\n";
+            });
+            const link = document.createElement("a");
+            link.setAttribute("href", encodeURI(csvContent));
+            link.setAttribute("download", "film_gunlugum.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        async function handleBulkAdd() {
+            const text = bulkAddTextarea.value.trim();
+            if (!text) { showNotification("Lütfen eklenecek film listesini girin.", true); return; }
+            const movieTitles = text.split('\n').map(line => line.split('-')[0].trim()).filter(title => title.length > 0);
+            if (movieTitles.length === 0) return;
+            bulkAddBtn.disabled = true;
+            bulkAddBtn.textContent = "İşleniyor...";
+            bulkAddStatus.innerHTML = '';
+            let addedCount = 0, duplicateCount = 0, notFoundCount = 0;
+            for (let i = 0; i < movieTitles.length; i++) {
+                const title = movieTitles[i];
+                bulkAddStatus.innerHTML = `<p>${i + 1}/${movieTitles.length} işleniyor: <strong>${title}</strong></p>`;
+                const searchData = await searchMovies(title);
+                if (searchData && searchData.results.length > 0) {
+                    const movie = searchData.results[0];
+                    const movieData = { tmdbId: movie.id.toString(), title: movie.title, posterPath: movie.poster_path || '', releaseYear: movie.release_date ? movie.release_date.split('-')[0] : 'N/A', notes: '' };
+                    const result = await addMovieToFirestore(movieData);
+                    if (result === 'success') addedCount++;
+                    else if (result === 'duplicate') duplicateCount++;
+                } else {
+                    notFoundCount++;
+                }
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            bulkAddStatus.innerHTML = `<p class="font-bold text-white">İşlem Tamamlandı!</p><p class="text-green-400">${addedCount} film eklendi.</p><p class="text-yellow-400">${duplicateCount} film zaten listede vardı.</p><p class="text-red-400">${notFoundCount} film bulunamadı.</p>`;
+            bulkAddBtn.disabled = false;
+            bulkAddBtn.textContent = "Listeyi İçe Aktar";
+            bulkAddTextarea.value = '';
+        }
+
+        // --- EVENT LISTENERS ---
+        mainTabBtn.addEventListener('click', showMainTab);
+        settingsTabBtn.addEventListener('click', showSettingsTab);
+        saveSettingsBtn.addEventListener('click', saveUserSettings);
+        searchForm.addEventListener('submit', async (e) => { 
+            e.preventDefault(); 
+            const term = document.getElementById('searchInput').value.trim(); 
+            if (term) {
+                const data = await searchMovies(term);
+                displaySearchResults(data ? data.results : []);
+            }
+        });
+        imageInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (event) => openCropModal(event.target.result);
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+        cancelCropBtn.addEventListener('click', closeCropModal);
+        saveCropBtn.addEventListener('click', saveCroppedImage);
+        deleteImageBtn.addEventListener('click', handleImageDelete);
+        filterInput.addEventListener('input', filterAndDisplayWatchedMovies);
+        genreFilter.addEventListener('change', filterAndDisplayWatchedMovies);
+        exportBtn.addEventListener('click', exportToCSV);
+        bulkAddBtn.addEventListener('click', handleBulkAdd);
+
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('add-movie-btn')) {
+                const movieData = { tmdbId: e.target.dataset.tmdbId, title: decodeURIComponent(e.target.dataset.title), posterPath: e.target.dataset.posterPath, releaseYear: e.target.dataset.releaseYear, notes: '' };
+                addMovieToFirestore(movieData).then(result => {
+                    if (result === 'success') showNotification(`"${movieData.title}" eklendi!`, false);
+                    else if (result === 'duplicate') showNotification(`"${movieData.title}" zaten listenizde!`, true);
+                });
+            }
+            if (e.target.classList.contains('save-notes-btn')) {
+                const docId = e.target.dataset.docId;
+                const notesTextarea = document.querySelector(`.notes-textarea[data-doc-id='${docId}']`);
+                if (notesTextarea) updateNotesInFirestore(docId, notesTextarea.value);
+            }
+            if (e.target.classList.contains('delete-movie-btn')) {
+                deleteMovieFromFirestore(e.target.dataset.docId);
+            }
+        });
+
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            const messageElement = document.getElementById('notification-message');
+            messageElement.textContent = message;
+            notification.className = `fixed bottom-5 right-5 text-white py-2 px-4 rounded-lg shadow-lg transition-opacity duration-300 ${isError ? 'bg-red-500' : 'bg-green-500'}`;
+            notification.classList.remove('opacity-0');
+            setTimeout(() => notification.classList.add('opacity-0'), 3000);
+        }
+
+        function getAuthErrorMessage(code) {
+            switch (code) {
+                case 'auth/wrong-password':
+                    return 'Yanlış şifre. Lütfen tekrar deneyin.';
+                case 'auth/user-not-found':
+                    return 'Bu e-posta ile kayıtlı bir kullanıcı bulunamadı.';
+                case 'auth/email-already-in-use':
+                    return 'Bu e-posta adresi zaten kullanılıyor.';
+                case 'auth/weak-password':
+                    return 'Şifre çok zayıf. En az 6 karakter olmalı.';
+                case 'auth/invalid-email':
+                    return 'Geçersiz e-posta adresi.';
+                case 'auth/operation-not-allowed':
+                    return 'E-posta/Şifre ile giriş yöntemi Firebase projenizde aktif değil.';
+                default:
+                    return `Bir kimlik doğrulama hatası oluştu: ${code}`;
+            }
+        }
+
+    </script>
+</body>
+</html>
+
