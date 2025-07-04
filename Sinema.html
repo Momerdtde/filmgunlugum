@@ -201,8 +201,7 @@
             measurementId: "G-4ZXXQ124RH"
         };
         
-        // UPDATED: Use the environment variable for appId if it exists
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'filmgunlugum-81fba';
+        const appId = firebaseConfig.projectId;
         
         let app, auth, db, userId;
         let watchedMoviesList = [];
