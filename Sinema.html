@@ -129,7 +129,7 @@
                         <h2 class="text-3xl font-bold text-white">İzlediklerim</h2>
                     </div>
                     <div class="flex flex-col md:flex-row gap-4 mb-6">
-                        <input type="text" id="filterInput" class="w-full md:w-2/3 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Listemde ara...">
+                        <input type="text" id="filterInput" class="w-full md:w-2/3 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Listemde başlık, yönetmen veya oyuncu ara...">
                         <select id="genreFilter" class="w-full md:w-1/3 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500">
                             <option value="">Tüm Türler</option>
                         </select>
@@ -150,7 +150,7 @@
                     <button id="saveSettingsBtn" class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg">Bilgileri Kaydet</button>
                 </div>
                 <div id="headerImageSection" class="mb-8 p-6 bg-gray-800 rounded-xl shadow-lg">
-                     <h2 class="text-2xl font-semibold mb-4 text-white">Başlık Resmi (Geçici)</h2>
+                     <h2 class="text-2xl font-semibold mb-4 text-white">Başlık Resmi</h2>
                     <div id="image-loader" class="text-center hidden py-4"><p>İşlem yapılıyor...</p></div>
                     <div id="image-content">
                         <div class="w-full h-64 bg-gray-700 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
@@ -179,7 +179,7 @@
     </div>
 
     <div id="cropModal" class="fixed inset-0 w-full h-full bg-black bg-opacity-75 flex items-center justify-center hidden z-50">
-        <div class="bg-gray-800 p-6 rounded-lg shadow-xl"><h3 class="text-xl font-semibold mb-4">Resmi Kırp</h3><div id="cropImageContainer" class="mb-4"><img id="cropImage" src=""></div><div class="flex justify-end gap-4"><button id="cancelCropBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">İptal</button><button id="saveCropBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Kırp ve Ayarla</button></div></div>
+        <div class="bg-gray-800 p-6 rounded-lg shadow-xl"><h3 class="text-xl font-semibold mb-4">Resmi Kırp</h3><div id="cropImageContainer" class="mb-4"><img id="cropImage" src=""></div><div class="flex justify-end gap-4"><button id="cancelCropBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">İptal</button><button id="saveCropBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Kırp ve Kaydet</button></div></div>
     </div>
     <div id="notification" class="fixed bottom-5 right-5 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg opacity-0 transition-opacity duration-300"><p id="notification-message"></p></div>
 
@@ -187,6 +187,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, updateDoc, query, setLogLevel, getDoc, setDoc, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
         
         const TMDB_API_KEY = 'be3431f83282ebf814b6db565e75105d';
         const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
@@ -203,7 +204,7 @@
         
         const appId = firebaseConfig.projectId;
         
-        let app, auth, db, userId;
+        let app, auth, db, storage, userId;
         let watchedMoviesList = [];
         let cropper = null;
         let unsubscribeSettings = () => {};
@@ -249,7 +250,7 @@
         const bulkAddTextarea = document.getElementById('bulkAddTextarea');
         const bulkAddBtn = document.getElementById('bulkAddBtn');
         const bulkAddStatus = document.getElementById('bulkAddStatus');
-        const placeholderImage = 'https://placehold.co/800x400/1f2937/4b5563?text=Resim+Y%C3%BCkle';
+        const placeholderImage = 'https://i.imgur.com/T5uA065.jpeg';
 
         // --- APP INITIALIZATION ---
         (async () => {
@@ -257,6 +258,7 @@
                 app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
+                storage = getStorage(app);
                 
                 await setPersistence(auth, browserLocalPersistence);
 
@@ -335,6 +337,7 @@
                 const fullName = [settings.firstName, settings.lastName].filter(Boolean).join(' ');
                 userNameDisplay.textContent = fullName;
                 userNameDisplay.classList.toggle('hidden', !fullName);
+                updateHeaderImages(settings.headerImageUrl);
             });
             
             const listLoader = document.getElementById('list-loader');
@@ -387,7 +390,7 @@
             mainHeaderImageContainer.classList.toggle('hidden', !url || url === placeholderImage);
         }
 
-        // --- HEADER IMAGE & CROPPER FUNCTIONS (Client-Side Only) ---
+        // --- HEADER IMAGE & CROPPER FUNCTIONS (NOW PERSISTENT) ---
         function openCropModal(imageSrc) {
             cropModal.classList.remove('hidden');
             cropImage.src = imageSrc;
@@ -400,19 +403,47 @@
             imageInput.value = '';
         }
 
-        function saveCroppedImage() {
-            if (!cropper) return;
+        async function saveCroppedImage() {
+            if (!cropper || !userId) return;
+            
+            showNotification("Resim işleniyor...", false);
+            
             const canvas = cropper.getCroppedCanvas({ width: 1200, imageSmoothingQuality: 'high' });
             closeCropModal();
             if (!canvas) { showNotification("Resim kırpılırken bir hata oluştu.", true); return; }
-            updateHeaderImages(canvas.toDataURL('image/jpeg'));
-            showNotification("Başlık resmi bu oturum için ayarlandı (Kalıcı değil).", false);
+
+            canvas.toBlob(async (blob) => {
+                if (!blob) { showNotification("Resim verisi oluşturulurken hata oluştu.", true); return; }
+                
+                const imageRef = ref(storage, `users/${userId}/header.jpg`);
+                try {
+                    await uploadBytes(imageRef, blob);
+                    const downloadURL = await getDownloadURL(imageRef);
+                    const settingsDocRef = doc(db, 'artifacts', appId, 'users', userId, 'settings', 'profile');
+                    await setDoc(settingsDocRef, { headerImageUrl: downloadURL }, { merge: true });
+                    showNotification("Başlık resmi başarıyla kaydedildi!", false);
+                } catch (error) {
+                    console.error("Image upload failed:", error);
+                    showNotification("Resim yüklenirken bir hata oluştu.", true);
+                }
+            }, 'image/jpeg');
         }
         
-        function handleImageDelete() {
-            if (!window.confirm("Başlık resmini kaldırmak istediğinizden emin misiniz?")) return;
-            updateHeaderImages(null);
-            showNotification("Resim bu oturum için kaldırıldı.", false);
+        async function handleImageDelete() {
+            if (!userId || !window.confirm("Başlık resmini kaldırmak istediğinizden emin misiniz?")) return;
+            const imageRef = ref(storage, `users/${userId}/header.jpg`);
+            const settingsDocRef = doc(db, 'artifacts', appId, 'users', userId, 'settings', 'profile');
+            try {
+                await deleteObject(imageRef);
+                await setDoc(settingsDocRef, { headerImageUrl: "" }, { merge: true });
+                showNotification("Resim silindi.", false);
+            } catch (error) {
+                if (error.code === 'storage/object-not-found') {
+                    await setDoc(settingsDocRef, { headerImageUrl: "" }, { merge: true });
+                } else {
+                    showNotification("Resim silinirken bir hata oluştu.", true);
+                }
+            }
         }
 
         // --- TMDB API & FIRESTORE FUNCTIONS ---
@@ -443,7 +474,7 @@
         
         async function getMovieDetails(tmdbId) {
             if (!TMDB_API_KEY) return null;
-            const url = `${TMDB_BASE_URL}/movie/${tmdbId}?api_key=${TMDB_API_KEY}&language=tr-TR&append_to_response=watch/providers`;
+            const url = `${TMDB_BASE_URL}/movie/${tmdbId}?api_key=${TMDB_API_KEY}&language=tr-TR&append_to_response=watch/providers,credits`;
             try { const response = await fetch(url); return await response.json(); } catch (error) { return null; }
         }
 
@@ -458,12 +489,22 @@
                 ratingHtml = `<div class="flex items-center gap-1 text-yellow-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg><span class="font-bold">${movie.voteAverage.toFixed(1)}</span></div>`;
             }
 
+            let directorHtml = '';
+            if (movie.director) {
+                directorHtml = `<div class="mt-2"><p class="text-xs text-gray-400">Yönetmen: <span class="text-gray-300">${movie.director}</span></p></div>`;
+            }
+
+            let castHtml = '';
+            if (movie.cast && movie.cast.length > 0) {
+                castHtml = `<div class="mt-1"><p class="text-xs text-gray-400">Oyuncular: <span class="text-gray-300">${movie.cast.join(', ')}</span></p></div>`;
+            }
+
             let providersHtml = '';
             if (movie.watchProviders && movie.watchProviders.length > 0) {
                 const providerLogos = movie.watchProviders.map(p => `<img src="https://image.tmdb.org/t/p/w45${p.logo_path}" alt="${p.provider_name}" title="${p.provider_name}" class="w-8 h-8 rounded-md">`).join('');
                 providersHtml = `<div class="mt-4"><p class="text-xs text-gray-400 mb-1">Platformlar (TR):</p><div class="flex flex-wrap gap-2">${providerLogos}</div></div>`;
             }
-            movieElement.innerHTML = `<div class="w-full md:w-48 bg-gray-700 flex-shrink-0 flex items-center justify-center"><img src="${posterPath}" alt="${movie.title}" class="w-full h-full object-contain" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';"></div><div class="p-6 flex flex-col flex-grow"><div class="flex-shrink-0"><div class="flex justify-between items-start"><h3 class="text-2xl font-bold text-white pr-2">${movie.title}</h3>${ratingHtml}</div><div class="flex items-center flex-wrap gap-y-2 my-2">${genreTags}</div><p class="text-gray-400 mb-2">${movie.releaseYear}</p>${providersHtml}</div><textarea class="notes-textarea w-full h-24 p-3 mt-4 bg-gray-700 border border-gray-600 rounded-lg" data-doc-id="${movie.id}" placeholder="Bu filmle ilgili notların...">${movie.notes || ''}</textarea><div class="mt-auto pt-4 flex flex-col sm:flex-row gap-3"><button class="save-notes-btn w-full sm:w-auto flex-grow bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg" data-doc-id="${movie.id}">Notları Kaydet</button><button class="delete-movie-btn w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg" data-doc-id="${movie.id}">Filmi Sil</button></div></div>`;
+            movieElement.innerHTML = `<div class="w-full md:w-48 bg-gray-700 flex-shrink-0 flex items-center justify-center"><img src="${posterPath}" alt="${movie.title}" class="w-full h-full object-contain" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';"></div><div class="p-6 flex flex-col flex-grow"><div class="flex-shrink-0"><div class="flex justify-between items-start"><h3 class="text-2xl font-bold text-white pr-2">${movie.title}</h3>${ratingHtml}</div><div class="flex items-center flex-wrap gap-y-2 my-2">${genreTags}</div><p class="text-gray-400 mb-2">${movie.releaseYear}</p>${directorHtml}${castHtml}${providersHtml}</div><textarea class="notes-textarea w-full h-24 p-3 mt-4 bg-gray-700 border border-gray-600 rounded-lg" data-doc-id="${movie.id}" placeholder="Bu filmle ilgili notların...">${movie.notes || ''}</textarea><div class="mt-auto pt-4 flex flex-col sm:flex-row gap-3"><button class="save-notes-btn w-full sm:w-auto flex-grow bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg" data-doc-id="${movie.id}">Notları Kaydet</button><button class="delete-movie-btn w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg" data-doc-id="${movie.id}">Filmi Sil</button><button class="update-movie-btn p-2 bg-gray-600 hover:bg-gray-700 rounded-lg" title="Bilgileri Yenile" data-doc-id="${movie.id}" data-tmdb-id="${movie.tmdbId}"><svg class="w-5 h-5 text-white pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.664 0l3.181-3.183m-4.991-2.693L7.985 5.959m0 0a8.25 8.25 0 0111.664 0l3.181 3.183" /></svg></button></div></div>`;
             watchedListContainer.appendChild(movieElement);
         }
 
@@ -478,6 +519,13 @@
             if (details) {
                 movieData.genres = details.genres ? details.genres.map(g => g.name) : [];
                 movieData.voteAverage = details.vote_average || 0;
+                
+                if (details.credits) {
+                    const director = details.credits.crew.find(person => person.job === 'Director');
+                    movieData.director = director ? director.name : '';
+                    movieData.cast = details.credits.cast.slice(0, 3).map(actor => actor.name);
+                }
+
                 let providers = [];
                 if (details['watch/providers']?.results?.TR?.flatrate) {
                     providers = details['watch/providers'].results.TR.flatrate.map(p => ({ 
@@ -495,6 +543,46 @@
             } catch (error) { 
                 console.error("Error adding document: ", error);
                 return { status: 'error' };
+            }
+        }
+
+        async function handleUpdateMovieDetails(docId, tmdbId) {
+            if (!userId) return;
+            showNotification("Film bilgileri güncelleniyor...", false);
+            const details = await getMovieDetails(tmdbId);
+            if (!details) {
+                showNotification("Detaylar alınamadı.", true);
+                return;
+            }
+
+            const movieDocRef = doc(db, 'artifacts', appId, 'users', userId, 'movies', docId);
+            const updateData = {};
+            
+            updateData.genres = details.genres ? details.genres.map(g => g.name) : [];
+            updateData.voteAverage = details.vote_average || 0;
+            
+            if (details.credits) {
+                const director = details.credits.crew.find(person => person.job === 'Director');
+                updateData.director = director ? director.name : '';
+                updateData.cast = details.credits.cast.slice(0, 3).map(actor => actor.name);
+            }
+
+            let providers = [];
+            if (details['watch/providers']?.results?.TR?.flatrate) {
+                providers = details['watch/providers'].results.TR.flatrate.map(p => ({ 
+                    provider_id: p.provider_id, 
+                    provider_name: p.provider_name, 
+                    logo_path: p.logo_path 
+                }));
+            }
+            updateData.watchProviders = providers;
+
+            try {
+                await updateDoc(movieDocRef, updateData);
+                showNotification("Film bilgileri güncellendi!", false);
+            } catch (error) {
+                console.error("Error updating movie details:", error);
+                showNotification("Güncelleme sırasında bir hata oluştu.", true);
             }
         }
 
@@ -516,9 +604,15 @@
         }
 
         function filterAndDisplayWatchedMovies() {
-            const filterText = filterInput.value.toLowerCase();
+            const filterText = filterInput.value.toLowerCase().trim();
             const selectedGenre = genreFilter.value;
-            const filteredMovies = watchedMoviesList.filter(movie => movie.title.toLowerCase().includes(filterText) && (!selectedGenre || (movie.genres && movie.genres.includes(selectedGenre))));
+            const filteredMovies = watchedMoviesList.filter(movie => {
+                const titleMatch = movie.title.toLowerCase().includes(filterText);
+                const directorMatch = movie.director ? movie.director.toLowerCase().includes(filterText) : false;
+                const castMatch = movie.cast ? movie.cast.some(actor => actor.toLowerCase().includes(filterText)) : false;
+                const genreMatch = !selectedGenre || (movie.genres && movie.genres.includes(selectedGenre));
+                return (titleMatch || directorMatch || castMatch) && genreMatch;
+            });
             watchedListContainer.innerHTML = '';
             if (filteredMovies.length > 0) { filteredMovies.forEach(displayWatchedMovie); }
             noFilterResults.style.display = filteredMovies.length === 0 && watchedMoviesList.length > 0 ? 'block' : 'none';
@@ -601,13 +695,15 @@
         bulkAddBtn.addEventListener('click', handleBulkAdd);
 
         document.addEventListener('click', async (e) => {
-            if (e.target.classList.contains('add-movie-btn')) {
-                const button = e.target;
-                button.disabled = true;
-                button.textContent = 'Ekleniyor...';
+            const addBtn = e.target.closest('.add-movie-btn');
+            const saveNotesBtn = e.target.closest('.save-notes-btn');
+            const deleteBtn = e.target.closest('.delete-movie-btn');
+            const updateBtn = e.target.closest('.update-movie-btn');
 
-                const movieData = { tmdbId: button.dataset.tmdbId, title: decodeURIComponent(button.dataset.title), posterPath: button.dataset.posterPath, releaseYear: button.dataset.releaseYear, notes: '' };
-                
+            if (addBtn) {
+                addBtn.disabled = true;
+                addBtn.textContent = 'Ekleniyor...';
+                const movieData = { tmdbId: addBtn.dataset.tmdbId, title: decodeURIComponent(addBtn.dataset.title), posterPath: addBtn.dataset.posterPath, releaseYear: addBtn.dataset.releaseYear, notes: '' };
                 try {
                     const result = await addMovieToFirestore(movieData);
                     if (result.status === 'success') {
@@ -625,13 +721,16 @@
                     searchInput.value = '';
                 }
             }
-            if (e.target.classList.contains('save-notes-btn')) {
-                const docId = e.target.dataset.docId;
+            if (saveNotesBtn) {
+                const docId = saveNotesBtn.dataset.docId;
                 const notesTextarea = document.querySelector(`.notes-textarea[data-doc-id='${docId}']`);
                 if (notesTextarea) updateNotesInFirestore(docId, notesTextarea.value);
             }
-            if (e.target.classList.contains('delete-movie-btn')) {
-                deleteMovieFromFirestore(e.target.dataset.docId);
+            if (deleteBtn) {
+                deleteMovieFromFirestore(deleteBtn.dataset.docId);
+            }
+            if (updateBtn) {
+                handleUpdateMovieDetails(updateBtn.dataset.docId, updateBtn.dataset.tmdbId);
             }
         });
 
