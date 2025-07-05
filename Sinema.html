@@ -8,10 +8,10 @@
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Google Fonts: Inter -->
+    <!-- Google Fonts: Inter and Bebas Neue for the title -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Custom Styles -->
     <style>
@@ -27,6 +27,48 @@
         }
         #backToTopBtn {
             transition: opacity 0.3s, transform 0.3s;
+        }
+        .cinema-title-container {
+            border: 3px solid #FBBF24; /* amber-400 */
+            padding: 0.5rem 1.5rem;
+            display: inline-block;
+            border-radius: 0.75rem;
+            background: #111827; /* gray-900 */
+            animation: flicker-border 3s linear infinite;
+        }
+        .cinema-title {
+            font-family: 'Bebas Neue', cursive;
+            color: #DC2626; /* red-600 */
+            text-transform: uppercase;
+            letter-spacing: 0.2rem;
+            position: relative;
+            -webkit-text-stroke: 1px #991B1B; /* red-800 for a darker edge */
+            text-shadow: 2px 2px 2px #000;
+        }
+        .cinema-title::after {
+            content: attr(data-text);
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: transparent;
+            background-image: repeating-radial-gradient(circle at center, #FDE047 1px, transparent 2px);
+            background-size: 8px 8px;
+            -webkit-background-clip: text;
+            background-clip: text;
+            filter: drop-shadow(0 0 2px #FDE047);
+            animation: flicker-text 1s linear infinite alternate;
+        }
+        @keyframes flicker-text {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0.7;
+            }
+        }
+        @keyframes flicker-border {
+            0%, 100% { box-shadow: 0 0 8px #F59E0B, 0 0 15px #F59E0B, inset 0 0 8px #FBBF24; }
+            50% { box-shadow: 0 0 12px #FBBF24, 0 0 25px #FBBF24, inset 0 0 12px #FDE047; }
         }
     </style>
 </head>
@@ -82,9 +124,11 @@
     <!-- Main App Container (hidden by default) -->
     <div id="appContainer" class="container mx-auto p-4 md:p-8 max-w-4xl mb-24 hidden">
         <header class="text-center mb-8">
-            <h1 class="text-4xl md:text-5xl font-bold text-cyan-400">Film Günlüğüm</h1>
-            <p id="userEmailDisplay" class="text-gray-400 mt-2"></p>
-            <h2 id="userNameDisplay" class="text-2xl text-gray-300 mt-4 hidden"></h2>
+            <div class="cinema-title-container">
+                <h1 id="appTitle" class="text-5xl md:text-6xl cinema-title" data-text="Film Günlüğüm">Film Günlüğüm</h1>
+            </div>
+            <p id="userEmailDisplay" class="text-gray-400 mt-4"></p>
+            <h2 id="userNameDisplay" class="text-2xl text-gray-300 mt-2 hidden"></h2>
             <button id="logoutBtn" class="mt-4 text-sm text-red-400 hover:underline">Çıkış Yap</button>
         </header>
 
@@ -104,11 +148,15 @@
                         <button type="submit" class="w-full sm:w-auto bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-6 rounded-lg">Ara</button>
                     </form>
                 </div>
-                <div id="searchResults" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8"></div>
+                <div id="searchResults" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8"></div>
                 <div id="search-loader" class="text-center hidden"><p>Aranıyor...</p></div>
+                <div id="paginationControls" class="flex justify-center items-center gap-4 mt-8"></div>
                 <div>
-                    <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4 border-b-2 border-gray-700 pb-4">
-                        <h2 class="text-3xl font-bold text-white">İzlediklerim</h2>
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4 border-b-2 border-gray-700 pb-4 mt-8">
+                        <div class="flex items-center gap-3">
+                            <h2 class="text-3xl font-bold text-white">İzlediklerim</h2>
+                            <span id="watchedCount" class="bg-cyan-600 text-white text-sm font-bold px-2.5 py-1 rounded-full">0</span>
+                        </div>
                     </div>
                     <div class="flex flex-col md:flex-row gap-4 mb-6">
                         <input type="text" id="filterInput" class="w-full md:w-2/3 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Listemde başlık, yönetmen veya oyuncu ara...">
@@ -178,6 +226,7 @@
         let watchedMoviesList = [];
         let unsubscribeSettings = () => {};
         let unsubscribeMovies = () => {};
+        let lastSearchQuery = '';
 
         setLogLevel('debug');
 
@@ -207,11 +256,13 @@
             const filterInput = document.getElementById('filterInput');
             const genreFilter = document.getElementById('genreFilter');
             const noFilterResults = document.getElementById('no-filter-results');
+            const watchedCount = document.getElementById('watchedCount');
             const exportBtn = document.getElementById('exportBtn');
             const bulkAddTextarea = document.getElementById('bulkAddTextarea');
             const bulkAddBtn = document.getElementById('bulkAddBtn');
             const bulkAddStatus = document.getElementById('bulkAddStatus');
             const backToTopBtn = document.getElementById('backToTopBtn');
+            const paginationControls = document.getElementById('paginationControls');
 
             // --- APP INITIALIZATION ---
             (async () => {
@@ -307,6 +358,7 @@
                     watchedMoviesList = [];
                     snapshot.forEach(doc => watchedMoviesList.push({ id: doc.id, ...doc.data() }));
                     watchedMoviesList.sort((a, b) => a.title.localeCompare(b.title));
+                    watchedCount.textContent = watchedMoviesList.length;
                     populateGenreFilter();
                     filterAndDisplayWatchedMovies();
                     if(snapshot.empty) { watchedListContainer.innerHTML = `<div class="text-center py-10 px-6 bg-gray-800 rounded-lg"><p>Henüz izlediğiniz bir film eklemediniz.</p></div>`; }
@@ -343,12 +395,13 @@
             }
             
             // --- TMDB API & FIRESTORE FUNCTIONS ---
-            async function performMultiSearch(query) {
+            async function performMultiSearch(query, page = 1) {
                 if (!TMDB_API_KEY) { showNotification("TMDb API anahtarı eksik.", true); return null; }
                 const searchLoader = document.getElementById('search-loader');
                 searchResultsContainer.innerHTML = '';
+                paginationControls.innerHTML = '';
                 searchLoader.classList.remove('hidden');
-                const url = `${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&language=tr-TR&include_adult=false`;
+                const url = `${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&language=tr-TR&include_adult=false&page=${page}`;
                 try {
                     const response = await fetch(url);
                     if (!response.ok) return null;
@@ -357,24 +410,26 @@
                 finally { searchLoader.classList.add('hidden'); }
             }
 
-            function displayMultiSearchResults(results) {
+            function displayMultiSearchResults(data) {
+                const results = data.results;
                 searchResultsContainer.innerHTML = '';
                 if (!results || results.length === 0) {
                     searchResultsContainer.innerHTML = `<p class="col-span-full text-center">Sonuç bulunamadı.</p>`;
                     return;
                 }
-                results.slice(0, 12).forEach(result => {
+                results.forEach(result => {
                     if (result.media_type === 'movie') {
                         const posterPath = result.poster_path ? `https://image.tmdb.org/t/p/w500${result.poster_path}` : 'https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';
                         const releaseYear = result.release_date ? result.release_date.split('-')[0] : 'N/A';
-                        const movieCard = `<div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg movie-card flex flex-col"><div class="w-full h-64 bg-gray-700 flex items-center justify-center"><img src="${posterPath}" alt="${result.title}" class="w-full h-full object-contain" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';"></div><div class="p-4 flex flex-col flex-grow"><h3 class="font-bold text-lg text-white">${result.title}</h3><p class="text-gray-400 text-sm mb-4">${releaseYear}</p><button class="add-movie-btn mt-auto w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg" data-tmdb-id="${result.id}" data-title="${encodeURIComponent(result.title)}" data-poster-path="${result.poster_path || ''}" data-release-year="${releaseYear}">Listeye Ekle</button></div></div>`;
+                        const movieCard = `<div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg movie-card flex flex-col"><div class="w-full h-48 bg-gray-700 flex items-center justify-center"><img src="${posterPath}" alt="${result.title}" class="w-full h-full object-contain" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';"></div><div class="p-3 flex flex-col flex-grow"><h3 class="font-bold text-sm text-white">${result.title}</h3><p class="text-gray-400 text-xs mb-2">${releaseYear}</p><button class="add-movie-btn mt-auto w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-1 px-2 text-sm rounded-lg" data-tmdb-id="${result.id}" data-title="${encodeURIComponent(result.title)}" data-poster-path="${result.poster_path || ''}" data-release-year="${releaseYear}">Ekle</button></div></div>`;
                         searchResultsContainer.innerHTML += movieCard;
                     } else if (result.media_type === 'person') {
                         const profilePath = result.profile_path ? `https://image.tmdb.org/t/p/w500${result.profile_path}` : 'https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';
-                        const personCard = `<div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg movie-card flex flex-col"><div class="w-full h-64 bg-gray-700 flex items-center justify-center"><img src="${profilePath}" alt="${result.name}" class="w-full h-full object-contain" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';"></div><div class="p-4 flex flex-col flex-grow"><h3 class="font-bold text-lg text-white">${result.name}</h3><p class="text-gray-400 text-sm mb-4">${result.known_for_department}</p><button class="show-person-movies-btn mt-auto w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg" data-person-id="${result.id}">Filmlerini Göster</button></div></div>`;
+                        const personCard = `<div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg movie-card flex flex-col"><div class="w-full h-48 bg-gray-700 flex items-center justify-center"><img src="${profilePath}" alt="${result.name}" class="w-full h-full object-contain" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';"></div><div class="p-3 flex flex-col flex-grow"><h3 class="font-bold text-sm text-white">${result.name}</h3><p class="text-gray-400 text-xs mb-2">${result.known_for_department}</p><button class="show-person-movies-btn mt-auto w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-2 text-sm rounded-lg" data-person-id="${result.id}">Filmleri Göster</button></div></div>`;
                         searchResultsContainer.innerHTML += personCard;
                     }
                 });
+                renderPaginationControls(data.page, data.total_pages);
             }
             
             async function getPersonMovieCredits(personId) {
@@ -567,15 +622,19 @@
                 for (let i = 0; i < movieTitles.length; i++) {
                     const title = movieTitles[i];
                     bulkAddStatus.innerHTML = `<p>${i + 1}/${movieTitles.length} işleniyor: <strong>${title}</strong></p>`;
-                    const searchData = await searchMovies(title);
+                    const searchData = await performMultiSearch(title);
                     if (searchData && searchData.results.length > 0) {
-                        const movie = searchData.results[0];
-                        const movieData = { tmdbId: movie.id.toString(), title: movie.title, posterPath: movie.poster_path || '', releaseYear: movie.release_date ? movie.release_date.split('-')[0] : 'N/A', notes: '' };
-                        const result = await addMovieToFirestore(movieData);
-                        if (result.status === 'success') {
-                            addedCount++;
-                        } else if (result.status === 'duplicate') {
-                            duplicateCount++;
+                        const movie = searchData.results.find(r => r.media_type === 'movie');
+                        if (movie) {
+                            const movieData = { tmdbId: movie.id.toString(), title: movie.title, posterPath: movie.poster_path || '', releaseYear: movie.release_date ? movie.release_date.split('-')[0] : 'N/A', notes: '' };
+                            const result = await addMovieToFirestore(movieData);
+                            if (result.status === 'success') {
+                                addedCount++;
+                            } else if (result.status === 'duplicate') {
+                                duplicateCount++;
+                            }
+                        } else {
+                            notFoundCount++;
                         }
                     } else {
                         notFoundCount++;
@@ -587,6 +646,35 @@
                 bulkAddBtn.textContent = "Listeyi İçe Aktar";
                 bulkAddTextarea.value = '';
             }
+            
+            function renderPaginationControls(page, totalPages) {
+                paginationControls.innerHTML = '';
+                if (totalPages <= 1) return;
+
+                const prevButton = document.createElement('button');
+                prevButton.textContent = 'Önceki';
+                prevButton.className = 'px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed';
+                prevButton.disabled = page === 1;
+                prevButton.addEventListener('click', () => {
+                    performMultiSearch(lastSearchQuery, page - 1).then(data => displayMultiSearchResults(data));
+                });
+
+                const pageInfo = document.createElement('span');
+                pageInfo.textContent = `Sayfa ${page} / ${totalPages}`;
+                pageInfo.className = 'px-4';
+                
+                const nextButton = document.createElement('button');
+                nextButton.textContent = 'Sonraki';
+                nextButton.className = 'px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed';
+                nextButton.disabled = page >= totalPages;
+                nextButton.addEventListener('click', () => {
+                    performMultiSearch(lastSearchQuery, page + 1).then(data => displayMultiSearchResults(data));
+                });
+
+                paginationControls.appendChild(prevButton);
+                paginationControls.appendChild(pageInfo);
+                paginationControls.appendChild(nextButton);
+            }
 
             // --- EVENT LISTENERS ---
             mainTabBtn.addEventListener('click', showMainTab);
@@ -596,8 +684,9 @@
                 e.preventDefault(); 
                 const term = searchInput.value.trim(); 
                 if (term) {
-                    const data = await performMultiSearch(term);
-                    displayMultiSearchResults(data ? data.results : []);
+                    lastSearchQuery = term;
+                    const data = await performMultiSearch(term, 1);
+                    displayMultiSearchResults(data);
                 }
             });
             filterInput.addEventListener('input', filterAndDisplayWatchedMovies);
@@ -639,6 +728,7 @@
                     } finally {
                         searchResultsContainer.innerHTML = '';
                         searchInput.value = '';
+                        paginationControls.innerHTML = '';
                     }
                 }
                 if (saveNotesBtn) {
@@ -655,7 +745,7 @@
                 if(personBtn) {
                     const personId = personBtn.dataset.personId;
                     const movies = await getPersonMovieCredits(personId);
-                    displayMultiSearchResults(movies);
+                    displayMultiSearchResults({results: movies, page: 1, total_pages: 1});
                 }
             });
 
