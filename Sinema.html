@@ -135,6 +135,7 @@
         <div class="mb-8 border-b border-gray-700">
             <nav class="flex space-x-4" aria-label="Tabs">
                 <button id="mainTabBtn" class="tab-btn active font-medium px-4 py-2 text-gray-300 rounded-t-lg">Film Günlüğüm</button>
+                <button id="collectionTabBtn" class="tab-btn font-medium px-4 py-2 text-gray-300 rounded-t-lg">Koleksiyonum</button>
                 <button id="settingsTabBtn" class="tab-btn font-medium px-4 py-2 text-gray-300 rounded-t-lg">Ayarlar</button>
             </nav>
         </div>
@@ -170,6 +171,24 @@
                 </div>
             </div>
 
+            <div id="collectionContent" class="hidden">
+                <div class="mb-8 p-6 bg-gray-800 rounded-xl shadow-lg">
+                    <h2 class="text-2xl font-semibold mb-4 text-white">Koleksiyona DVD Ekle</h2>
+                    <form id="dvdSearchForm" class="flex flex-col sm:flex-row gap-4">
+                        <input type="text" id="dvdSearchInput" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg" placeholder="Koleksiyon için film ara..." required>
+                        <button type="submit" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg">Ara</button>
+                    </form>
+                </div>
+                <div id="dvdSearchResults" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8"></div>
+                <div id="dvd-search-loader" class="text-center hidden"><p>Aranıyor...</p></div>
+                <div>
+                    <h2 class="text-3xl font-bold text-white mb-4">DVD Koleksiyonum (<span id="dvdCount">0</span>)</h2>
+                    <div id="dvdListContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    </div>
+                    <div id="dvd-list-loader" class="text-center mt-8 hidden"><p>Koleksiyon yükleniyor...</p></div>
+                </div>
+            </div>
+
             <div id="settingsContent" class="hidden">
                 <div id="settingsSection" class="mb-8 p-6 bg-gray-800 rounded-xl shadow-lg">
                     <h2 class="text-2xl font-semibold mb-4 text-white">Kullanıcı Bilgileri</h2>
@@ -201,6 +220,18 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
         </svg>
     </button>
+    
+    <!-- NEW: Confirmation Modal -->
+    <div id="confirmModal" class="fixed inset-0 w-full h-full bg-black bg-opacity-75 flex items-center justify-center hidden z-50">
+        <div class="bg-gray-800 p-8 rounded-lg shadow-xl text-center">
+            <h3 id="confirmModalTitle" class="text-xl font-semibold mb-4">Emin misiniz?</h3>
+            <p id="confirmModalMessage" class="text-gray-300 mb-6">Bu öğeyi silmek istediğinizden emin misiniz?</p>
+            <div class="flex justify-center gap-4">
+                <button id="cancelDeleteBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg">İptal</button>
+                <button id="confirmDeleteBtn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">Sil</button>
+            </div>
+        </div>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -226,7 +257,9 @@
         let watchedMoviesList = [];
         let unsubscribeSettings = () => {};
         let unsubscribeMovies = () => {};
+        let unsubscribeDvds = () => {};
         let lastSearchQuery = '';
+        let deleteAction = null;
 
         setLogLevel('debug');
 
@@ -243,8 +276,10 @@
             const userEmailDisplay = document.getElementById('userEmailDisplay');
             const userNameDisplay = document.getElementById('userNameDisplay');
             const mainTabBtn = document.getElementById('mainTabBtn');
+            const collectionTabBtn = document.getElementById('collectionTabBtn');
             const settingsTabBtn = document.getElementById('settingsTabBtn');
             const mainContent = document.getElementById('mainContent');
+            const collectionContent = document.getElementById('collectionContent');
             const settingsContent = document.getElementById('settingsContent');
             const firstNameInput = document.getElementById('firstNameInput');
             const lastNameInput = document.getElementById('lastNameInput');
@@ -257,12 +292,20 @@
             const genreFilter = document.getElementById('genreFilter');
             const noFilterResults = document.getElementById('no-filter-results');
             const watchedCount = document.getElementById('watchedCount');
+            const dvdSearchForm = document.getElementById('dvdSearchForm');
+            const dvdSearchInput = document.getElementById('dvdSearchInput');
+            const dvdSearchResultsContainer = document.getElementById('dvdSearchResults');
+            const dvdListContainer = document.getElementById('dvdListContainer');
+            const dvdCount = document.getElementById('dvdCount');
             const exportBtn = document.getElementById('exportBtn');
             const bulkAddTextarea = document.getElementById('bulkAddTextarea');
             const bulkAddBtn = document.getElementById('bulkAddBtn');
             const bulkAddStatus = document.getElementById('bulkAddStatus');
             const backToTopBtn = document.getElementById('backToTopBtn');
             const paginationControls = document.getElementById('paginationControls');
+            const confirmModal = document.getElementById('confirmModal');
+            const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+            const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
 
             // --- APP INITIALIZATION ---
             (async () => {
@@ -286,6 +329,7 @@
                             authContainer.classList.remove('hidden');
                             appContainer.classList.add('hidden');
                             watchedListContainer.innerHTML = '';
+                            dvdListContainer.innerHTML = '';
                         }
                         loadingOverlay.classList.add('hidden');
                     });
@@ -335,6 +379,7 @@
             function cleanupListeners() {
                 if (typeof unsubscribeSettings === 'function') unsubscribeSettings();
                 if (typeof unsubscribeMovies === 'function') unsubscribeMovies();
+                if (typeof unsubscribeDvds === 'function') unsubscribeDvds();
             }
             
             function setupListeners() {
@@ -363,21 +408,47 @@
                     filterAndDisplayWatchedMovies();
                     if(snapshot.empty) { watchedListContainer.innerHTML = `<div class="text-center py-10 px-6 bg-gray-800 rounded-lg"><p>Henüz izlediğiniz bir film eklemediniz.</p></div>`; }
                 }, (error) => { console.error("Error listening to movie collection:", error); });
+
+                const dvdListLoader = document.getElementById('dvd-list-loader');
+                dvdListLoader.classList.remove('hidden');
+                const dvdCollectionPath = collection(db, 'artifacts', appId, 'users', userId, 'dvd_collection');
+                unsubscribeDvds = onSnapshot(query(dvdCollectionPath), (snapshot) => {
+                    dvdListLoader.classList.add('hidden');
+                    dvdListContainer.innerHTML = '';
+                    dvdCount.textContent = snapshot.size;
+                    let dvds = [];
+                    snapshot.forEach(doc => dvds.push({ id: doc.id, ...doc.data() }));
+                    dvds.sort((a,b) => a.title.localeCompare(b.title)).forEach(displayDvd);
+                    if(snapshot.empty) { dvdListContainer.innerHTML = `<p class="col-span-full text-center text-gray-400">Henüz koleksiyonunuza bir DVD eklemediniz.</p>`; }
+                });
             }
 
 
             // --- TAB NAVIGATION LOGIC ---
             function showMainTab() {
                 mainContent.classList.remove('hidden');
+                collectionContent.classList.add('hidden');
                 settingsContent.classList.add('hidden');
                 mainTabBtn.classList.add('active');
+                collectionTabBtn.classList.remove('active');
+                settingsTabBtn.classList.remove('active');
+            }
+
+            function showCollectionTab() {
+                mainContent.classList.add('hidden');
+                collectionContent.classList.remove('hidden');
+                settingsContent.classList.add('hidden');
+                mainTabBtn.classList.remove('active');
+                collectionTabBtn.classList.add('active');
                 settingsTabBtn.classList.remove('active');
             }
 
             function showSettingsTab() {
                 mainContent.classList.add('hidden');
+                collectionContent.classList.add('hidden');
                 settingsContent.classList.remove('hidden');
                 mainTabBtn.classList.remove('active');
+                collectionTabBtn.classList.remove('active');
                 settingsTabBtn.classList.add('active');
             }
 
@@ -425,7 +496,7 @@
                         searchResultsContainer.innerHTML += movieCard;
                     } else if (result.media_type === 'person') {
                         const profilePath = result.profile_path ? `https://image.tmdb.org/t/p/w500${result.profile_path}` : 'https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';
-                        const personCard = `<div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg movie-card flex flex-col"><div class="w-full h-48 bg-gray-700 flex items-center justify-center"><img src="${profilePath}" alt="${result.name}" class="w-full h-full object-contain" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';"></div><div class="p-3 flex flex-col flex-grow"><h3 class="font-bold text-sm text-white">${result.name}</h3><p class="text-gray-400 text-xs mb-2">${result.known_for_department}</p><button class="show-person-movies-btn mt-auto w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-2 text-sm rounded-lg" data-person-id="${result.id}">Filmleri Göster</button></div></div>`;
+                        const personCard = `<div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg movie-card flex flex-col"><div class="w-full h-48 bg-gray-700 flex items-center justify-center"><img src="${profilePath}" alt="${result.name}" class="w-full h-full object-contain" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';"></div><div class="p-3 flex flex-col flex-grow"><h3 class="font-bold text-sm text-white">${result.name}</h3><p class="text-gray-400 text-xs mb-2">${result.known_for_department}</p><button class="show-person-movies-btn mt-auto w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-2 text-sm rounded-lg" data-person-id="${result.id}">Filmlerini Göster</button></div></div>`;
                         searchResultsContainer.innerHTML += personCard;
                     }
                 });
@@ -521,6 +592,59 @@
                     return { status: 'error' };
                 }
             }
+            
+            function displayDvd(dvd) {
+                const posterPath = dvd.posterPath ? `https://image.tmdb.org/t/p/w500${dvd.posterPath}` : 'https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';
+                const dvdElement = document.createElement('div');
+                dvdElement.className = 'relative group';
+                dvdElement.innerHTML = `
+                    <img src="${posterPath}" alt="${dvd.title}" class="w-full h-full object-cover rounded-lg shadow-lg" loading="lazy">
+                    <div class="absolute inset-0 bg-black bg-opacity-75 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2 rounded-lg">
+                        <p class="text-white text-center font-bold text-sm">${dvd.title}</p>
+                        <button class="delete-dvd-btn mt-2 bg-red-600 text-white p-2 rounded-full" data-doc-id="${dvd.id}" title="Koleksiyondan Sil">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
+                              <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                `;
+                dvdListContainer.appendChild(dvdElement);
+            }
+
+            async function addDvdToFirestore(dvdData) {
+                if (!userId) return { status: 'error' };
+                const dvdCollection = collection(db, 'artifacts', appId, 'users', userId, 'dvd_collection');
+                const q = query(dvdCollection, where("tmdbId", "==", dvdData.tmdbId));
+                const querySnapshot = await getDocs(q);
+                if (!querySnapshot.empty) { return { status: 'duplicate' }; }
+                
+                const dataToSave = {
+                    title: decodeURIComponent(dvdData.title),
+                    posterPath: dvdData.posterPath,
+                    tmdbId: dvdData.tmdbId,
+                    addedAt: new Date()
+                };
+
+                try { 
+                    await addDoc(dvdCollection, dataToSave); 
+                    return { status: 'success' };
+                } catch (error) { 
+                    console.error("Error adding DVD: ", error);
+                    return { status: 'error' };
+                }
+            }
+
+            async function deleteDvdFromFirestore(docId) {
+                if (!userId) return;
+                try {
+                    const dvdDocRef = doc(db, 'artifacts', appId, 'users', userId, 'dvd_collection', docId);
+                    await deleteDoc(dvdDocRef);
+                    showNotification("DVD koleksiyondan silindi.", false);
+                } catch(error) {
+                    console.error("Error deleting DVD:", error);
+                    showNotification("DVD silinirken bir hata oluştu.", true);
+                }
+            }
 
             async function handleUpdateMovieDetails(docId, tmdbId) {
                 if (!userId) return;
@@ -568,8 +692,14 @@
             }
 
             async function deleteMovieFromFirestore(docId) {
-                if (!userId || !window.confirm("Bu filmi silmek istediğinizden emin misiniz?")) return;
-                try { await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'movies', docId)); showNotification("Film başarıyla silindi.", false); } catch (error) { console.error("Error deleting document: ", error); }
+                if (!userId) return;
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'movies', docId));
+                    showNotification("Film başarıyla silindi.", false);
+                } catch (error) {
+                    console.error("Error deleting document: ", error);
+                    showNotification("Film silinirken bir hata oluştu.", true);
+                }
             }
             
             function populateGenreFilter() {
@@ -675,10 +805,25 @@
                 paginationControls.appendChild(pageInfo);
                 paginationControls.appendChild(nextButton);
             }
+            
+            function displayDvdSearchResults(results) {
+                dvdSearchResultsContainer.innerHTML = '';
+                if (!results || results.length === 0) {
+                    dvdSearchResultsContainer.innerHTML = `<p class="col-span-full text-center">Sonuç bulunamadı.</p>`;
+                    return;
+                }
+                results.filter(r => r.media_type === 'movie').slice(0, 12).forEach(movie => {
+                    const posterPath = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';
+                    const releaseYear = movie.release_date ? movie.release_date.split('-')[0] : 'N/A';
+                    const movieCard = `<div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg movie-card flex flex-col"><div class="w-full h-48 bg-gray-700 flex items-center justify-center"><img src="${posterPath}" alt="${movie.title}" class="w-full h-full object-contain" loading="lazy"></div><div class="p-3 flex flex-col flex-grow"><h3 class="font-bold text-sm text-white">${movie.title}</h3><p class="text-gray-400 text-xs mb-2">${releaseYear}</p><button class="add-dvd-btn mt-auto w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-1 px-2 text-sm rounded-lg" data-tmdb-id="${movie.id}" data-title="${encodeURIComponent(movie.title)}" data-poster-path="${movie.poster_path || ''}">Koleksiyona Ekle</button></div></div>`;
+                    dvdSearchResultsContainer.innerHTML += movieCard;
+                });
+            }
 
             // --- EVENT LISTENERS ---
             mainTabBtn.addEventListener('click', showMainTab);
             settingsTabBtn.addEventListener('click', showSettingsTab);
+            collectionTabBtn.addEventListener('click', showCollectionTab);
             saveSettingsBtn.addEventListener('click', saveUserSettings);
             searchForm.addEventListener('submit', async (e) => { 
                 e.preventDefault(); 
@@ -687,6 +832,14 @@
                     lastSearchQuery = term;
                     const data = await performMultiSearch(term, 1);
                     displayMultiSearchResults(data);
+                }
+            });
+            dvdSearchForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const term = dvdSearchInput.value.trim();
+                if (term) {
+                    const data = await performMultiSearch(term);
+                    displayDvdSearchResults(data ? data.results : []);
                 }
             });
             filterInput.addEventListener('input', filterAndDisplayWatchedMovies);
@@ -702,12 +855,27 @@
                 }
             });
 
+            confirmDeleteBtn.addEventListener('click', () => {
+                if (typeof deleteAction === 'function') {
+                    deleteAction();
+                }
+                confirmModal.classList.add('hidden');
+                deleteAction = null;
+            });
+
+            cancelDeleteBtn.addEventListener('click', () => {
+                confirmModal.classList.add('hidden');
+                deleteAction = null;
+            });
+
             document.addEventListener('click', async (e) => {
                 const addBtn = e.target.closest('.add-movie-btn');
                 const saveNotesBtn = e.target.closest('.save-notes-btn');
                 const deleteBtn = e.target.closest('.delete-movie-btn');
                 const updateBtn = e.target.closest('.update-movie-btn');
                 const personBtn = e.target.closest('.show-person-movies-btn');
+                const addDvdBtn = e.target.closest('.add-dvd-btn');
+                const deleteDvdBtn = e.target.closest('.delete-dvd-btn');
 
                 if (addBtn) {
                     addBtn.disabled = true;
@@ -731,13 +899,39 @@
                         paginationControls.innerHTML = '';
                     }
                 }
+                if (addDvdBtn) {
+                    addDvdBtn.disabled = true;
+                    addDvdBtn.textContent = 'Ekleniyor...';
+                    const dvdData = {
+                        tmdbId: addDvdBtn.dataset.tmdbId,
+                        title: decodeURIComponent(addDvdBtn.dataset.title),
+                        posterPath: addDvdBtn.dataset.posterPath
+                    };
+                    try {
+                        const result = await addDvdToFirestore(dvdData);
+                        if (result.status === 'success') {
+                            showNotification(`"${dvdData.title}" koleksiyona eklendi!`, false);
+                        } else if (result.status === 'duplicate') {
+                            showNotification(`"${dvdData.title}" zaten koleksiyonda!`, true);
+                        } else {
+                            showNotification('DVD eklenirken bir hata oluştu.', true);
+                        }
+                    } catch (error) {
+                        console.error("Add DVD button error:", error);
+                        showNotification('Beklenmedik bir hata oluştu.', true);
+                    } finally {
+                        dvdSearchResultsContainer.innerHTML = '';
+                        dvdSearchInput.value = '';
+                    }
+                }
                 if (saveNotesBtn) {
                     const docId = saveNotesBtn.dataset.docId;
                     const notesTextarea = document.querySelector(`.notes-textarea[data-doc-id='${docId}']`);
                     if (notesTextarea) updateNotesInFirestore(docId, notesTextarea.value);
                 }
                 if (deleteBtn) {
-                    deleteMovieFromFirestore(deleteBtn.dataset.docId);
+                    deleteAction = () => deleteMovieFromFirestore(deleteBtn.dataset.docId);
+                    confirmModal.classList.remove('hidden');
                 }
                 if (updateBtn) {
                     handleUpdateMovieDetails(updateBtn.dataset.docId, updateBtn.dataset.tmdbId);
@@ -746,6 +940,10 @@
                     const personId = personBtn.dataset.personId;
                     const movies = await getPersonMovieCredits(personId);
                     displayMultiSearchResults({results: movies, page: 1, total_pages: 1});
+                }
+                if (deleteDvdBtn) {
+                    deleteAction = () => deleteDvdFromFirestore(deleteDvdBtn.dataset.docId);
+                    confirmModal.classList.remove('hidden');
                 }
             });
 
