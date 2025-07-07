@@ -136,6 +136,7 @@
             <nav class="flex space-x-4" aria-label="Tabs">
                 <button id="mainTabBtn" class="tab-btn active font-medium px-4 py-2 text-gray-300 rounded-t-lg">Film Günlüğüm</button>
                 <button id="collectionTabBtn" class="tab-btn font-medium px-4 py-2 text-gray-300 rounded-t-lg">Koleksiyonum</button>
+                <button id="analysisTabBtn" class="tab-btn font-medium px-4 py-2 text-gray-300 rounded-t-lg">Analiz</button>
                 <button id="settingsTabBtn" class="tab-btn font-medium px-4 py-2 text-gray-300 rounded-t-lg">Ayarlar</button>
             </nav>
         </div>
@@ -182,10 +183,27 @@
                 <div id="dvdSearchResults" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8"></div>
                 <div id="dvd-search-loader" class="text-center hidden"><p>Aranıyor...</p></div>
                 <div>
-                    <h2 class="text-3xl font-bold text-white mb-4">DVD Koleksiyonum (<span id="dvdCount">0</span>)</h2>
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4 border-b-2 border-gray-700 pb-4 mt-8">
+                        <h2 class="text-3xl font-bold text-white">DVD Koleksiyonum (<span id="dvdCount">0</span>)</h2>
+                        <input type="text" id="dvdFilterInput" class="w-full md:w-1/3 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg" placeholder="Koleksiyonda ara...">
+                    </div>
                     <div id="dvdListContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                     </div>
                     <div id="dvd-list-loader" class="text-center mt-8 hidden"><p>Koleksiyon yükleniyor...</p></div>
+                </div>
+            </div>
+
+            <div id="analysisContent" class="hidden">
+                <h2 class="text-3xl font-bold text-white mb-6 border-b-2 border-gray-700 pb-4">İzleme Analizi</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-4 text-cyan-400">Favori Yönetmenler</h3>
+                        <ul id="directorAnalysis" class="space-y-2 text-gray-300"></ul>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-4 text-cyan-400">Favori Oyuncular</h3>
+                        <ul id="actorAnalysis" class="space-y-2 text-gray-300"></ul>
+                    </div>
                 </div>
             </div>
 
@@ -254,6 +272,7 @@
         
         let app, auth, db, userId;
         let watchedMoviesList = [];
+        let dvdCollectionList = [];
         let unsubscribeSettings = () => {};
         let unsubscribeMovies = () => {};
         let unsubscribeDvds = () => {};
@@ -276,9 +295,11 @@
             const userNameDisplay = document.getElementById('userNameDisplay');
             const mainTabBtn = document.getElementById('mainTabBtn');
             const collectionTabBtn = document.getElementById('collectionTabBtn');
+            const analysisTabBtn = document.getElementById('analysisTabBtn');
             const settingsTabBtn = document.getElementById('settingsTabBtn');
             const mainContent = document.getElementById('mainContent');
             const collectionContent = document.getElementById('collectionContent');
+            const analysisContent = document.getElementById('analysisContent');
             const settingsContent = document.getElementById('settingsContent');
             const firstNameInput = document.getElementById('firstNameInput');
             const lastNameInput = document.getElementById('lastNameInput');
@@ -296,6 +317,7 @@
             const dvdSearchResultsContainer = document.getElementById('dvdSearchResults');
             const dvdListContainer = document.getElementById('dvdListContainer');
             const dvdCount = document.getElementById('dvdCount');
+            const dvdFilterInput = document.getElementById('dvdFilterInput');
             const exportBtn = document.getElementById('exportBtn');
             const bulkAddTextarea = document.getElementById('bulkAddTextarea');
             const bulkAddBtn = document.getElementById('bulkAddBtn');
@@ -305,6 +327,8 @@
             const confirmModal = document.getElementById('confirmModal');
             const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
             const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+            const directorAnalysisList = document.getElementById('directorAnalysis');
+            const actorAnalysisList = document.getElementById('actorAnalysis');
 
             // --- APP INITIALIZATION ---
             (async () => {
@@ -405,6 +429,7 @@
                     watchedCount.textContent = watchedMoviesList.length;
                     populateGenreFilter();
                     filterAndDisplayWatchedMovies();
+                    generateAnalysis();
                     if(snapshot.empty) { watchedListContainer.innerHTML = `<div class="text-center py-10 px-6 bg-gray-800 rounded-lg"><p>Henüz izlediğiniz bir film eklemediniz.</p></div>`; }
                 }, (error) => { console.error("Error listening to movie collection:", error); });
 
@@ -413,11 +438,10 @@
                 const dvdCollectionPath = collection(db, 'artifacts', appId, 'users', userId, 'dvd_collection');
                 unsubscribeDvds = onSnapshot(query(dvdCollectionPath), (snapshot) => {
                     dvdListLoader.classList.add('hidden');
-                    dvdListContainer.innerHTML = '';
-                    dvdCount.textContent = snapshot.size;
-                    let dvds = [];
-                    snapshot.forEach(doc => dvds.push({ id: doc.id, ...doc.data() }));
-                    dvds.sort((a,b) => a.title.localeCompare(b.title)).forEach(displayDvd);
+                    dvdCollectionList = [];
+                    snapshot.forEach(doc => dvdCollectionList.push({ id: doc.id, ...doc.data() }));
+                    dvdCount.textContent = dvdCollectionList.length;
+                    filterAndDisplayDvds();
                     if(snapshot.empty) { dvdListContainer.innerHTML = `<p class="col-span-full text-center text-gray-400">Henüz koleksiyonunuza bir DVD eklemediniz.</p>`; }
                 });
             }
@@ -427,27 +451,44 @@
             function showMainTab() {
                 mainContent.classList.remove('hidden');
                 collectionContent.classList.add('hidden');
+                analysisContent.classList.add('hidden');
                 settingsContent.classList.add('hidden');
                 mainTabBtn.classList.add('active');
                 collectionTabBtn.classList.remove('active');
+                analysisTabBtn.classList.remove('active');
                 settingsTabBtn.classList.remove('active');
             }
 
             function showCollectionTab() {
                 mainContent.classList.add('hidden');
                 collectionContent.classList.remove('hidden');
+                analysisContent.classList.add('hidden');
                 settingsContent.classList.add('hidden');
                 mainTabBtn.classList.remove('active');
                 collectionTabBtn.classList.add('active');
+                analysisTabBtn.classList.remove('active');
+                settingsTabBtn.classList.remove('active');
+            }
+
+            function showAnalysisTab() {
+                mainContent.classList.add('hidden');
+                collectionContent.classList.add('hidden');
+                analysisContent.classList.remove('hidden');
+                settingsContent.classList.add('hidden');
+                mainTabBtn.classList.remove('active');
+                collectionTabBtn.classList.remove('active');
+                analysisTabBtn.classList.add('active');
                 settingsTabBtn.classList.remove('active');
             }
 
             function showSettingsTab() {
                 mainContent.classList.add('hidden');
                 collectionContent.classList.add('hidden');
+                analysisContent.classList.add('hidden');
                 settingsContent.classList.remove('hidden');
                 mainTabBtn.classList.remove('active');
                 collectionTabBtn.classList.remove('active');
+                analysisTabBtn.classList.remove('active');
                 settingsTabBtn.classList.add('active');
             }
 
@@ -709,18 +750,35 @@
             }
 
             function filterAndDisplayWatchedMovies() {
-                const filterText = filterInput.value.toLowerCase().trim();
+                const filterText = filterInput.value.toLocaleLowerCase('tr-TR');
                 const selectedGenre = genreFilter.value;
                 const filteredMovies = watchedMoviesList.filter(movie => {
-                    const titleMatch = movie.title.toLowerCase().includes(filterText);
-                    const directorMatch = movie.director ? movie.director.toLowerCase().includes(filterText) : false;
-                    const castMatch = movie.cast ? movie.cast.some(actor => actor.toLowerCase().includes(filterText)) : false;
+                    const titleMatch = movie.title.toLocaleLowerCase('tr-TR').includes(filterText);
+                    const directorMatch = movie.director ? movie.director.toLocaleLowerCase('tr-TR').includes(filterText) : false;
+                    const castMatch = movie.cast ? movie.cast.some(actor => actor.toLocaleLowerCase('tr-TR').includes(filterText)) : false;
                     const genreMatch = !selectedGenre || (movie.genres && movie.genres.includes(selectedGenre));
                     return (titleMatch || directorMatch || castMatch) && genreMatch;
                 });
                 watchedListContainer.innerHTML = '';
                 if (filteredMovies.length > 0) { filteredMovies.forEach(displayWatchedMovie); }
                 noFilterResults.style.display = filteredMovies.length === 0 && watchedMoviesList.length > 0 ? 'block' : 'none';
+            }
+            
+            function filterAndDisplayDvds() {
+                const filterText = dvdFilterInput.value.toLocaleLowerCase('tr-TR');
+                const filteredDvds = dvdCollectionList.filter(dvd => {
+                    return dvd.title.toLocaleLowerCase('tr-TR').includes(filterText);
+                });
+                dvdListContainer.innerHTML = '';
+                if (filteredDvds.length > 0) {
+                    filteredDvds.forEach(displayDvd);
+                } else {
+                    if (dvdCollectionList.length > 0) {
+                         dvdListContainer.innerHTML = `<p class="col-span-full text-center text-gray-400">Arama kriterlerinize uygun DVD bulunamadı.</p>`;
+                    } else {
+                         dvdListContainer.innerHTML = `<p class="col-span-full text-center text-gray-400">Henüz koleksiyonunuza bir DVD eklemediniz.</p>`;
+                    }
+                }
             }
             
             function exportToCSV() {
@@ -818,11 +876,42 @@
                     dvdSearchResultsContainer.innerHTML += movieCard;
                 });
             }
+            
+            function generateAnalysis() {
+                const directorCounts = {};
+                const actorCounts = {};
+
+                watchedMoviesList.forEach(movie => {
+                    if (movie.director) {
+                        directorCounts[movie.director] = (directorCounts[movie.director] || 0) + 1;
+                    }
+                    if (movie.cast) {
+                        movie.cast.forEach(actor => {
+                            actorCounts[actor] = (actorCounts[actor] || 0) + 1;
+                        });
+                    }
+                });
+
+                renderAnalysisList(directorAnalysisList, directorCounts, 'film');
+                renderAnalysisList(actorAnalysisList, actorCounts, 'film');
+            }
+
+            function renderAnalysisList(element, data, unit) {
+                element.innerHTML = '';
+                const sortedData = Object.entries(data).sort(([, a], [, b]) => b - a);
+                sortedData.slice(0, 10).forEach(([name, count]) => {
+                    const li = document.createElement('li');
+                    li.className = "flex justify-between items-center bg-gray-800 p-2 rounded";
+                    li.innerHTML = `<button class="text-left hover:text-cyan-400 analysis-item" data-name="${name}">${name}</button><span class="font-bold text-cyan-400">${count} ${unit}</span>`;
+                    element.appendChild(li);
+                });
+            }
 
             // --- EVENT LISTENERS ---
             mainTabBtn.addEventListener('click', showMainTab);
             settingsTabBtn.addEventListener('click', showSettingsTab);
             collectionTabBtn.addEventListener('click', showCollectionTab);
+            analysisTabBtn.addEventListener('click', showAnalysisTab);
             saveSettingsBtn.addEventListener('click', saveUserSettings);
             searchForm.addEventListener('submit', async (e) => { 
                 e.preventDefault(); 
@@ -842,6 +931,7 @@
                 }
             });
             filterInput.addEventListener('input', filterAndDisplayWatchedMovies);
+            dvdFilterInput.addEventListener('input', filterAndDisplayDvds);
             genreFilter.addEventListener('change', filterAndDisplayWatchedMovies);
             exportBtn.addEventListener('click', exportToCSV);
             bulkAddBtn.addEventListener('click', handleBulkAdd);
@@ -875,6 +965,7 @@
                 const personBtn = e.target.closest('.show-person-movies-btn');
                 const addDvdBtn = e.target.closest('.add-dvd-btn');
                 const deleteDvdBtn = e.target.closest('.delete-dvd-btn');
+                const analysisItem = e.target.closest('.analysis-item');
 
                 if (addBtn) {
                     addBtn.disabled = true;
@@ -943,6 +1034,13 @@
                 if (deleteDvdBtn) {
                     deleteAction = () => deleteDvdFromFirestore(deleteDvdBtn.dataset.docId);
                     confirmModal.classList.remove('hidden');
+                }
+                if (analysisItem) {
+                    const name = analysisItem.dataset.name;
+                    showMainTab();
+                    filterInput.value = name;
+                    filterInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    filterInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
             });
 
