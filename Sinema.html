@@ -159,9 +159,17 @@
                         <button type="submit" class="w-full sm:w-auto bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-6 rounded-lg">Ara</button>
                     </form>
                 </div>
-                <div id="searchResults" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8"></div>
+                <div id="searchResultsWrapper" class="hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-semibold text-white">Arama Sonuçları</h3>
+                        <button id="closeSearchResultsBtn" class="p-2 rounded-full hover:bg-gray-700">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+                    <div id="searchResults" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8"></div>
+                    <div id="paginationControls" class="flex justify-center items-center gap-4 mt-8"></div>
+                </div>
                 <div id="search-loader" class="text-center hidden"><p>Aranıyor...</p></div>
-                <div id="paginationControls" class="flex justify-center items-center gap-4 mt-8"></div>
                 <div>
                     <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4 border-b-2 border-gray-700 pb-4 mt-8">
                         <div class="flex items-center gap-3">
@@ -189,7 +197,15 @@
                         <button type="submit" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg">Ara</button>
                     </form>
                 </div>
-                <div id="dvdSearchResults" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8"></div>
+                <div id="dvdSearchResultsWrapper" class="hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-semibold text-white">Arama Sonuçları</h3>
+                        <button id="closeDvdSearchResultsBtn" class="p-2 rounded-full hover:bg-gray-700">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+                    <div id="dvdSearchResults" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8"></div>
+                </div>
                 <div id="dvd-search-loader" class="text-center hidden"><p>Aranıyor...</p></div>
                 <div>
                     <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4 border-b-2 border-gray-700 pb-4 mt-8">
@@ -305,7 +321,7 @@
             const mainTabBtn = document.getElementById('mainTabBtn');
             const collectionTabBtn = document.getElementById('collectionTabBtn');
             const analysisTabBtn = document.getElementById('analysisTabBtn');
-            const settingsTabBtn = document.getElementById('settingsIconBtn'); // UPDATED
+            const settingsTabBtn = document.getElementById('settingsIconBtn');
             const mainContent = document.getElementById('mainContent');
             const collectionContent = document.getElementById('collectionContent');
             const analysisContent = document.getElementById('analysisContent');
@@ -315,7 +331,9 @@
             const saveSettingsBtn = document.getElementById('saveSettingsBtn');
             const searchForm = document.getElementById('searchForm');
             const searchInput = document.getElementById('searchInput');
+            const searchResultsWrapper = document.getElementById('searchResultsWrapper');
             const searchResultsContainer = document.getElementById('searchResults');
+            const closeSearchResultsBtn = document.getElementById('closeSearchResultsBtn');
             const watchedListContainer = document.getElementById('watchedList');
             const filterInput = document.getElementById('filterInput');
             const genreFilter = document.getElementById('genreFilter');
@@ -323,7 +341,9 @@
             const watchedCount = document.getElementById('watchedCount');
             const dvdSearchForm = document.getElementById('dvdSearchForm');
             const dvdSearchInput = document.getElementById('dvdSearchInput');
+            const dvdSearchResultsWrapper = document.getElementById('dvdSearchResultsWrapper');
             const dvdSearchResultsContainer = document.getElementById('dvdSearchResults');
+            const closeDvdSearchResultsBtn = document.getElementById('closeDvdSearchResultsBtn');
             const dvdListContainer = document.getElementById('dvdListContainer');
             const dvdCount = document.getElementById('dvdCount');
             const dvdFilterInput = document.getElementById('dvdFilterInput');
@@ -434,7 +454,7 @@
                     listLoader.classList.add('hidden');
                     watchedMoviesList = [];
                     snapshot.forEach(doc => watchedMoviesList.push({ id: doc.id, ...doc.data() }));
-                    watchedMoviesList.sort((a, b) => a.title.localeCompare(b.title));
+                    watchedMoviesList.sort((a, b) => a.title.localeCompare(b.title, 'tr'));
                     watchedCount.textContent = watchedMoviesList.length;
                     populateGenreFilter();
                     filterAndDisplayWatchedMovies();
@@ -533,6 +553,7 @@
                     searchResultsContainer.innerHTML = `<p class="col-span-full text-center">Sonuç bulunamadı.</p>`;
                     return;
                 }
+                searchResultsWrapper.classList.remove('hidden');
                 results.forEach(result => {
                     if (result.media_type === 'movie') {
                         const posterPath = result.poster_path ? `https://image.tmdb.org/t/p/w500${result.poster_path}` : 'https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';
@@ -874,6 +895,7 @@
                     dvdSearchResultsContainer.innerHTML = `<p class="col-span-full text-center">Sonuç bulunamadı.</p>`;
                     return;
                 }
+                dvdSearchResultsWrapper.classList.remove('hidden');
                 results.filter(r => r.media_type === 'movie').slice(0, 12).forEach(movie => {
                     const posterPath = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';
                     const releaseYear = movie.release_date ? movie.release_date.split('-')[0] : 'N/A';
@@ -948,6 +970,12 @@
                     backToTopBtn.classList.add('opacity-0', 'translate-y-16');
                 }
             });
+            closeSearchResultsBtn.addEventListener('click', () => {
+                searchResultsWrapper.classList.add('hidden');
+            });
+            closeDvdSearchResultsBtn.addEventListener('click', () => {
+                dvdSearchResultsWrapper.classList.add('hidden');
+            });
 
             confirmDeleteBtn.addEventListener('click', () => {
                 if (typeof deleteAction === 'function') {
@@ -974,7 +1002,9 @@
 
                 if (addBtn) {
                     addBtn.disabled = true;
-                    addBtn.textContent = 'Ekleniyor...';
+                    addBtn.textContent = 'Eklendi';
+                    addBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                    addBtn.classList.add('bg-gray-500', 'cursor-not-allowed');
                     const movieData = { tmdbId: addBtn.dataset.tmdbId, title: decodeURIComponent(addBtn.dataset.title), posterPath: addBtn.dataset.posterPath, releaseYear: addBtn.dataset.releaseYear, notes: '' };
                     try {
                         const result = await addMovieToFirestore(movieData);
@@ -988,15 +1018,13 @@
                     } catch (error) {
                         console.error("Add movie button error:", error);
                         showNotification('Beklenmedik bir hata oluştu.', true);
-                    } finally {
-                        searchResultsContainer.innerHTML = '';
-                        searchInput.value = '';
-                        paginationControls.innerHTML = '';
                     }
                 }
                 if (addDvdBtn) {
                     addDvdBtn.disabled = true;
-                    addDvdBtn.textContent = 'Ekleniyor...';
+                    addDvdBtn.textContent = 'Eklendi';
+                    addDvdBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                    addDvdBtn.classList.add('bg-gray-500', 'cursor-not-allowed');
                     const dvdData = {
                         tmdbId: addDvdBtn.dataset.tmdbId,
                         title: decodeURIComponent(addDvdBtn.dataset.title),
@@ -1014,9 +1042,6 @@
                     } catch (error) {
                         console.error("Add DVD button error:", error);
                         showNotification('Beklenmedik bir hata oluştu.', true);
-                    } finally {
-                        dvdSearchResultsContainer.innerHTML = '';
-                        dvdSearchInput.value = '';
                     }
                 }
                 if (saveNotesBtn) {
