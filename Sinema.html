@@ -70,6 +70,9 @@
             0%, 100% { box-shadow: 0 0 8px #F59E0B, 0 0 15px #F59E0B, inset 0 0 8px #FBBF24; }
             50% { box-shadow: 0 0 12px #FBBF24, 0 0 25px #FBBF24, inset 0 0 12px #FDE047; }
         }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.75);
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white antialiased">
@@ -155,7 +158,12 @@
                 <div class="mb-8 p-6 bg-gray-800 rounded-xl shadow-lg">
                     <h2 class="text-2xl font-semibold mb-4 text-white">Yeni Film Ekle</h2>
                     <form id="searchForm" class="flex flex-col sm:flex-row gap-4">
-                        <input type="text" id="searchInput" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white" placeholder="Film, yönetmen veya oyuncu ara..." required>
+                        <div class="relative w-full">
+                            <input type="text" id="searchInput" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white pr-10" placeholder="Film, yönetmen veya oyuncu ara..." required>
+                            <button type="button" id="clearSearchInput" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-white hidden">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        </div>
                         <button type="submit" class="w-full sm:w-auto bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-6 rounded-lg">Ara</button>
                     </form>
                 </div>
@@ -178,7 +186,12 @@
                         </div>
                     </div>
                     <div class="flex flex-col md:flex-row gap-4 mb-6">
-                        <input type="text" id="filterInput" class="w-full md:w-2/3 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Listemde başlık, yönetmen veya oyuncu ara...">
+                        <div class="relative w-full md:w-2/3">
+                            <input type="text" id="filterInput" class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 pr-10" placeholder="Listemde başlık, yönetmen veya oyuncu ara...">
+                            <button type="button" id="clearFilterInput" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-white hidden">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        </div>
                         <select id="genreFilter" class="w-full md:w-1/3 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500">
                             <option value="">Tüm Türler</option>
                         </select>
@@ -193,12 +206,17 @@
                 <div class="mb-8 p-6 bg-gray-800 rounded-xl shadow-lg">
                     <h2 class="text-2xl font-semibold mb-4 text-white">Koleksiyona DVD Ekle</h2>
                     <form id="dvdSearchForm" class="flex flex-col sm:flex-row gap-4">
-                        <input type="text" id="dvdSearchInput" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg" placeholder="Koleksiyon için film ara..." required>
+                         <div class="relative w-full">
+                            <input type="text" id="dvdSearchInput" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 pr-10" placeholder="Koleksiyon için film ara..." required>
+                            <button type="button" id="clearDvdSearchInput" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-white hidden">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        </div>
                         <button type="submit" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg">Ara</button>
                     </form>
                 </div>
                 <div id="dvdSearchResultsWrapper" class="hidden">
-                    <div class="flex justify-between items-center mb-4">
+                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-xl font-semibold text-white">Arama Sonuçları</h3>
                         <button id="closeDvdSearchResultsBtn" class="p-2 rounded-full hover:bg-gray-700">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -210,7 +228,12 @@
                 <div>
                     <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4 border-b-2 border-gray-700 pb-4 mt-8">
                         <h2 class="text-3xl font-bold text-white">DVD Koleksiyonum (<span id="dvdCount">0</span>)</h2>
-                        <input type="text" id="dvdFilterInput" class="w-full md:w-1/3 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg" placeholder="Koleksiyonda ara...">
+                        <div class="relative w-full md:w-1/3">
+                           <input type="text" id="dvdFilterInput" class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 pr-10" placeholder="Koleksiyonda ara...">
+                            <button type="button" id="clearDvdFilterInput" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-white hidden">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        </div>
                     </div>
                     <div id="dvdListContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                     </div>
@@ -250,6 +273,8 @@
                 </div>
                 <div id="dataManagementSection" class="p-6 bg-gray-800 rounded-xl shadow-lg">
                     <h2 class="text-2xl font-semibold mb-4 text-white">Veri Yönetimi</h2>
+                    <button id="updateAllBtn" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg mb-4">Tüm Film Bilgilerini Güncelle</button>
+                    <div id="updateAllStatus" class="text-center text-sm text-gray-400 mb-4"></div>
                     <button id="exportBtn" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-6 rounded-lg">Listeyi Dışa Aktar (CSV)</button>
                 </div>
             </div>
@@ -274,6 +299,13 @@
             </div>
         </div>
     </div>
+    
+    <div id="movieInfoModal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50 p-4">
+        <div id="movieInfoModalContent" class="bg-gray-800 max-w-3xl w-full rounded-xl shadow-lg overflow-hidden relative">
+            <!-- Content will be injected by JS -->
+        </div>
+    </div>
+
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -331,31 +363,38 @@
             const saveSettingsBtn = document.getElementById('saveSettingsBtn');
             const searchForm = document.getElementById('searchForm');
             const searchInput = document.getElementById('searchInput');
+            const clearSearchInput = document.getElementById('clearSearchInput');
             const searchResultsWrapper = document.getElementById('searchResultsWrapper');
             const searchResultsContainer = document.getElementById('searchResults');
             const closeSearchResultsBtn = document.getElementById('closeSearchResultsBtn');
             const watchedListContainer = document.getElementById('watchedList');
             const filterInput = document.getElementById('filterInput');
+            const clearFilterInput = document.getElementById('clearFilterInput');
             const genreFilter = document.getElementById('genreFilter');
             const noFilterResults = document.getElementById('no-filter-results');
             const watchedCount = document.getElementById('watchedCount');
             const dvdSearchForm = document.getElementById('dvdSearchForm');
             const dvdSearchInput = document.getElementById('dvdSearchInput');
+            const clearDvdSearchInput = document.getElementById('clearDvdSearchInput');
             const dvdSearchResultsWrapper = document.getElementById('dvdSearchResultsWrapper');
             const dvdSearchResultsContainer = document.getElementById('dvdSearchResults');
             const closeDvdSearchResultsBtn = document.getElementById('closeDvdSearchResultsBtn');
             const dvdListContainer = document.getElementById('dvdListContainer');
             const dvdCount = document.getElementById('dvdCount');
             const dvdFilterInput = document.getElementById('dvdFilterInput');
+            const clearDvdFilterInput = document.getElementById('clearDvdFilterInput');
             const exportBtn = document.getElementById('exportBtn');
-            const bulkAddTextarea = document.getElementById('bulkAddTextarea');
             const bulkAddBtn = document.getElementById('bulkAddBtn');
             const bulkAddStatus = document.getElementById('bulkAddStatus');
+            const updateAllBtn = document.getElementById('updateAllBtn');
+            const updateAllStatus = document.getElementById('updateAllStatus');
             const backToTopBtn = document.getElementById('backToTopBtn');
             const paginationControls = document.getElementById('paginationControls');
             const confirmModal = document.getElementById('confirmModal');
             const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
             const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+            const movieInfoModal = document.getElementById('movieInfoModal');
+            const movieInfoModalContent = document.getElementById('movieInfoModalContent');
             const directorAnalysisList = document.getElementById('directorAnalysis');
             const actorAnalysisList = document.getElementById('actorAnalysis');
 
@@ -611,13 +650,28 @@
                 if (movie.cast && movie.cast.length > 0) {
                     castHtml = `<div class="mt-1"><p class="text-xs text-gray-400">Oyuncular: <span class="text-gray-300">${movie.cast.join(', ')}</span></p></div>`;
                 }
+                
+                let writerHtml = '';
+                if (movie.writer) {
+                    writerHtml = `<div class="mt-1"><p class="text-xs text-gray-400">Senarist: <span class="text-gray-300">${movie.writer}</span></p></div>`;
+                }
+                
+                let dopHtml = '';
+                if (movie.dop) {
+                    dopHtml = `<div class="mt-1"><p class="text-xs text-gray-400">Görüntü Yön.: <span class="text-gray-300">${movie.dop}</span></p></div>`;
+                }
+
+                let producerHtml = '';
+                if (movie.producer) {
+                    producerHtml = `<div class="mt-1"><p class="text-xs text-gray-400">Yapımcı: <span class="text-gray-300">${movie.producer}</span></p></div>`;
+                }
 
                 let providersHtml = '';
                 if (movie.watchProviders && movie.watchProviders.length > 0) {
                     const providerLogos = movie.watchProviders.map(p => `<img src="https://image.tmdb.org/t/p/w45${p.logo_path}" alt="${p.provider_name}" title="${p.provider_name}" class="w-8 h-8 rounded-md">`).join('');
                     providersHtml = `<div class="mt-4"><p class="text-xs text-gray-400 mb-1">Platformlar (TR):</p><div class="flex flex-wrap gap-2">${providerLogos}</div></div>`;
                 }
-                movieElement.innerHTML = `<div class="w-full md:w-48 bg-gray-700 flex-shrink-0 flex items-center justify-center"><img src="${posterPath}" alt="${movie.title}" class="w-full h-full object-contain" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';"></div><div class="p-6 flex flex-col flex-grow"><div class="flex-shrink-0"><div class="flex justify-between items-start"><h3 class="text-2xl font-bold text-white pr-2">${movie.title}</h3>${ratingHtml}</div><div class="flex items-center flex-wrap gap-y-2 my-2">${genreTags}</div><p class="text-gray-400 mb-2">${movie.releaseYear}</p>${directorHtml}${castHtml}${providersHtml}</div><textarea class="notes-textarea w-full h-24 p-3 mt-4 bg-gray-700 border border-gray-600 rounded-lg" data-doc-id="${movie.id}" placeholder="Bu filmle ilgili notların...">${movie.notes || ''}</textarea><div class="mt-auto pt-4 flex flex-col sm:flex-row gap-3"><button class="save-notes-btn w-full sm:w-auto flex-grow bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg" data-doc-id="${movie.id}">Notları Kaydet</button><button class="delete-movie-btn w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg" data-doc-id="${movie.id}">Filmi Sil</button><button class="update-movie-btn p-2 bg-gray-600 hover:bg-gray-700 rounded-lg" title="Bilgileri Yenile" data-doc-id="${movie.id}" data-tmdb-id="${movie.tmdbId}"><svg class="w-5 h-5 text-white pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.664 0l3.181-3.183m-4.991-2.693L7.985 5.959m0 0a8.25 8.25 0 0111.664 0l3.181 3.183" /></svg></button></div></div>`;
+                movieElement.innerHTML = `<div class="w-full md:w-48 bg-gray-700 flex-shrink-0 flex items-center justify-center"><img src="${posterPath}" alt="${movie.title}" class="w-full h-full object-contain" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';"></div><div class="p-6 flex flex-col flex-grow"><div class="flex-shrink-0"><div class="flex justify-between items-start"><h3 class="text-2xl font-bold text-white pr-2">${movie.title}</h3>${ratingHtml}</div><div class="flex items-center flex-wrap gap-y-2 my-2">${genreTags}</div><p class="text-gray-400 mb-2">${movie.releaseYear}</p>${directorHtml}${castHtml}${writerHtml}${dopHtml}${producerHtml}${providersHtml}</div><textarea class="notes-textarea w-full h-24 p-3 mt-4 bg-gray-700 border border-gray-600 rounded-lg" data-doc-id="${movie.id}" placeholder="Bu filmle ilgili notların...">${movie.notes || ''}</textarea><div class="mt-auto pt-4 flex flex-col sm:flex-row gap-3"><button class="save-notes-btn w-full sm:w-auto flex-grow bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg" data-doc-id="${movie.id}">Notları Kaydet</button><button class="delete-movie-btn w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg" data-doc-id="${movie.id}">Filmi Sil</button><button class="info-movie-btn p-2 bg-blue-600 hover:bg-blue-700 rounded-lg" title="Film Bilgileri" data-tmdb-id="${movie.tmdbId}"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg></button><button class="update-movie-btn p-2 bg-gray-600 hover:bg-gray-700 rounded-lg" title="Bilgileri Yenile" data-doc-id="${movie.id}" data-tmdb-id="${movie.tmdbId}"><svg class="w-5 h-5 text-white pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.664 0l3.181-3.183m-4.991-2.693L7.985 5.959m0 0a8.25 8.25 0 0111.664 0l3.181 3.183" /></svg></button></div></div>`;
                 watchedListContainer.appendChild(movieElement);
             }
 
@@ -634,8 +688,16 @@
                     movieData.voteAverage = details.vote_average || 0;
                     
                     if (details.credits) {
-                        const director = details.credits.crew.find(person => person.job === 'Director');
+                        const crew = details.credits.crew;
+                        const director = crew.find(p => p.job === 'Director');
+                        const writer = crew.find(p => p.department === 'Writing');
+                        const dop = crew.find(p => p.job === 'Director of Photography');
+                        const producer = crew.find(p => p.job === 'Producer');
+
                         movieData.director = director ? director.name : '';
+                        movieData.writer = writer ? writer.name : '';
+                        movieData.dop = dop ? dop.name : '';
+                        movieData.producer = producer ? producer.name : '';
                         movieData.cast = details.credits.cast.slice(0, 3).map(actor => actor.name);
                     }
 
@@ -667,11 +729,18 @@
                     <img src="${posterPath}" alt="${dvd.title}" class="w-full h-full object-cover rounded-lg shadow-lg" loading="lazy">
                     <div class="absolute inset-0 bg-black bg-opacity-75 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2 rounded-lg">
                         <p class="text-white text-center font-bold text-sm">${dvd.title}</p>
-                        <button class="delete-dvd-btn mt-2 bg-red-600 text-white p-2 rounded-full" data-doc-id="${dvd.id}" title="Koleksiyondan Sil">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
-                              <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                            </svg>
-                        </button>
+                        <div class="mt-2 flex gap-2">
+                           <button class="info-dvd-btn bg-blue-600 text-white p-2 rounded-full" data-tmdb-id="${dvd.tmdbId}" title="Bilgi">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                            <button class="delete-dvd-btn bg-red-600 text-white p-2 rounded-full" data-doc-id="${dvd.id}" title="Koleksiyondan Sil">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 `;
                 dvdListContainer.appendChild(dvdElement);
@@ -728,8 +797,16 @@
                 updateData.voteAverage = details.vote_average || 0;
                 
                 if (details.credits) {
-                    const director = details.credits.crew.find(person => person.job === 'Director');
+                    const crew = details.credits.crew;
+                    const director = crew.find(p => p.job === 'Director');
+                    const writer = crew.find(p => p.department === 'Writing');
+                    const dop = crew.find(p => p.job === 'Director of Photography');
+                    const producer = crew.find(p => p.job === 'Producer');
+
                     updateData.director = director ? director.name : '';
+                    updateData.writer = writer ? writer.name : '';
+                    updateData.dop = dop ? dop.name : '';
+                    updateData.producer = producer ? producer.name : '';
                     updateData.cast = details.credits.cast.slice(0, 3).map(actor => actor.name);
                 }
 
@@ -797,7 +874,7 @@
                 });
                 dvdListContainer.innerHTML = '';
                 if (filteredDvds.length > 0) {
-                    filteredDvds.forEach(displayDvd);
+                    filteredDvds.sort((a,b) => a.title.localeCompare(b.title, 'tr')).forEach(displayDvd);
                 } else {
                     if (dvdCollectionList.length > 0) {
                          dvdListContainer.innerHTML = `<p class="col-span-full text-center text-gray-400">Arama kriterlerinize uygun DVD bulunamadı.</p>`;
@@ -933,6 +1010,57 @@
                     element.appendChild(li);
                 });
             }
+            
+            function showMovieInfoModal(details) {
+                if (!details) {
+                    showNotification("Film detayları alınamadı.", true);
+                    return;
+                }
+
+                const posterPath = details.poster_path ? `https://image.tmdb.org/t/p/w500${details.poster_path}` : 'https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';
+                const releaseYear = details.release_date ? details.release_date.split('-')[0] : 'N/A';
+                
+                let crewHtml = '';
+                if (details.credits && details.credits.crew) {
+                    const director = details.credits.crew.find(p => p.job === 'Director');
+                    const writer = details.credits.crew.find(p => p.department === 'Writing');
+                    const dop = details.credits.crew.find(p => p.job === 'Director of Photography');
+                    const producer = details.credits.crew.find(p => p.job === 'Producer');
+
+                    if (director) crewHtml += `<p class="mt-2"><strong class="text-cyan-400">Yönetmen:</strong> ${director.name}</p>`;
+                    if (writer) crewHtml += `<p class="mt-1"><strong class="text-cyan-400">Senarist:</strong> ${writer.name}</p>`;
+                    if (dop) crewHtml += `<p class="mt-1"><strong class="text-cyan-400">Görüntü Yön.:</strong> ${dop.name}</p>`;
+                    if (producer) crewHtml += `<p class="mt-1"><strong class="text-cyan-400">Yapımcı:</strong> ${producer.name}</p>`;
+                }
+
+                let castHtml = '';
+                if (details.credits && details.credits.cast && details.credits.cast.length > 0) {
+                    castHtml = `<p class="mt-2"><strong class="text-cyan-400">Oyuncular:</strong> ${details.credits.cast.slice(0, 5).map(actor => actor.name).join(', ')}</p>`;
+                }
+
+                movieInfoModalContent.innerHTML = `
+                    <button id="closeMovieModalBtn" class="absolute top-2 right-2 text-gray-500 hover:text-white z-10 p-2 rounded-full bg-black bg-opacity-50">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                    <div class="flex flex-col md:flex-row">
+                        <img src="${posterPath}" class="w-full md:w-1/3 object-cover rounded-l-xl" alt="${details.title}">
+                        <div class="p-6 flex flex-col">
+                            <h2 class="text-3xl font-bold text-white">${details.title} <span class="text-xl text-gray-400">(${releaseYear})</span></h2>
+                            <p class="text-gray-300 mt-4">${details.overview || 'Açıklama bulunamadı.'}</p>
+                            <div class="mt-4 text-sm">
+                                ${crewHtml}
+                                ${castHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                movieInfoModal.classList.remove('hidden');
+                
+                document.getElementById('closeMovieModalBtn').addEventListener('click', () => {
+                    movieInfoModal.classList.add('hidden');
+                });
+            }
 
             // --- EVENT LISTENERS ---
             mainTabBtn.addEventListener('click', showMainTab);
@@ -962,6 +1090,16 @@
             genreFilter.addEventListener('change', filterAndDisplayWatchedMovies);
             exportBtn.addEventListener('click', exportToCSV);
             bulkAddBtn.addEventListener('click', handleBulkAdd);
+            updateAllBtn.addEventListener('click', async () => {
+                updateAllStatus.textContent = 'Güncelleme başladı...';
+                for(let i = 0; i < watchedMoviesList.length; i++) {
+                    const movie = watchedMoviesList[i];
+                    updateAllStatus.textContent = `${i+1}/${watchedMoviesList.length} güncelleniyor: ${movie.title}`;
+                    await handleUpdateMovieDetails(movie.id, movie.tmdbId);
+                    await new Promise(resolve => setTimeout(resolve, 250));
+                }
+                updateAllStatus.textContent = 'Tüm filmler güncellendi!';
+            });
             backToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
             window.addEventListener('scroll', () => {
                 if (window.scrollY > 300) {
@@ -970,6 +1108,22 @@
                     backToTopBtn.classList.add('opacity-0', 'translate-y-16');
                 }
             });
+            
+            function setupClearButton(inputEl, clearBtnEl) {
+                inputEl.addEventListener('input', () => {
+                    clearBtnEl.classList.toggle('hidden', !inputEl.value);
+                });
+                clearBtnEl.addEventListener('click', () => {
+                    inputEl.value = '';
+                    inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+                    clearBtnEl.classList.add('hidden');
+                });
+            }
+            setupClearButton(searchInput, clearSearchInput);
+            setupClearButton(filterInput, clearFilterInput);
+            setupClearButton(dvdSearchInput, clearDvdSearchInput);
+            setupClearButton(dvdFilterInput, clearDvdFilterInput);
+
             closeSearchResultsBtn.addEventListener('click', () => {
                 searchResultsWrapper.classList.add('hidden');
             });
@@ -989,6 +1143,12 @@
                 confirmModal.classList.add('hidden');
                 deleteAction = null;
             });
+            
+            movieInfoModal.addEventListener('click', (e) => {
+                if (e.target === movieInfoModal) {
+                    movieInfoModal.classList.add('hidden');
+                }
+            });
 
             document.addEventListener('click', async (e) => {
                 const addBtn = e.target.closest('.add-movie-btn');
@@ -999,6 +1159,8 @@
                 const addDvdBtn = e.target.closest('.add-dvd-btn');
                 const deleteDvdBtn = e.target.closest('.delete-dvd-btn');
                 const analysisItem = e.target.closest('.analysis-item');
+                const infoDvdBtn = e.target.closest('.info-dvd-btn');
+                const infoMovieBtn = e.target.closest('.info-movie-btn');
 
                 if (addBtn) {
                     addBtn.disabled = true;
@@ -1071,6 +1233,16 @@
                     filterInput.value = name;
                     filterInput.dispatchEvent(new Event('input', { bubbles: true }));
                     filterInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                if (infoDvdBtn) {
+                    const tmdbId = infoDvdBtn.dataset.tmdbId;
+                    const movieDetails = await getMovieDetails(tmdbId);
+                    showMovieInfoModal(movieDetails);
+                }
+                 if (infoMovieBtn) {
+                    const tmdbId = infoMovieBtn.dataset.tmdbId;
+                    const movieDetails = await getMovieDetails(tmdbId);
+                    showMovieInfoModal(movieDetails);
                 }
             });
 
