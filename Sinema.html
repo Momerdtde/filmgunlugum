@@ -21,11 +21,9 @@
         .tab-btn.active {
             background-color: #0891b2; /* cyan-600 */
             color: white;
-            border-bottom-color: transparent;
         }
         .tab-btn {
             transition: background-color 0.3s ease, color 0.3s ease;
-             border-bottom: 2px solid transparent;
         }
         #backToTopBtn {
             transition: opacity 0.3s, transform 0.3s;
@@ -144,11 +142,11 @@
         </header>
 
         <div class="mb-8 border-b border-gray-700">
-            <nav class="flex space-x-4" aria-label="Tabs">
-                <button id="mainTabBtn" class="tab-btn active font-medium px-4 py-2 text-gray-300 rounded-t-lg">Film Günlüğüm</button>
-                <button id="watchlistTabBtn" class="tab-btn font-medium px-4 py-2 text-gray-300 rounded-t-lg">İzleme Listem</button>
-                <button id="collectionTabBtn" class="tab-btn font-medium px-4 py-2 text-gray-300 rounded-t-lg">Koleksiyonum</button>
-                <button id="analysisTabBtn" class="tab-btn font-medium px-4 py-2 text-gray-300 rounded-t-lg">Analiz</button>
+            <nav class="grid grid-cols-2 gap-2 md:flex md:space-x-4" aria-label="Tabs">
+                <button id="mainTabBtn" class="tab-btn active font-medium px-4 py-2 text-gray-300 rounded-lg text-center">Film Günlüğüm</button>
+                <button id="watchlistTabBtn" class="tab-btn font-medium px-4 py-2 text-gray-300 rounded-lg text-center">İzleme Listem</button>
+                <button id="analysisTabBtn" class="tab-btn font-medium px-4 py-2 text-gray-300 rounded-lg text-center">Analiz</button>
+                <button id="collectionTabBtn" class="tab-btn font-medium px-4 py-2 text-gray-300 rounded-lg text-center">Koleksiyonum</button>
             </nav>
         </div>
 
