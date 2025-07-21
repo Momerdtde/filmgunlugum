@@ -633,11 +633,44 @@
                     if (result.media_type === 'movie') {
                         const posterPath = result.poster_path ? `https://image.tmdb.org/t/p/w500${result.poster_path}` : 'https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';
                         const releaseYear = result.release_date ? result.release_date.split('-')[0] : 'N/A';
-                        const movieCard = `<div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg movie-card flex flex-col"><div class="w-full h-48 bg-gray-700 flex items-center justify-center"><img src="${posterPath}" alt="${result.title}" class="w-full h-full object-contain" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';"></div><div class="p-3 flex flex-col flex-grow"><h3 class="font-bold text-sm text-white">${result.title}</h3><p class="text-gray-400 text-xs mb-2">${releaseYear}</p><button class="add-movie-btn mt-auto w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-1 px-2 text-sm rounded-lg" data-tmdb-id="${result.id}" data-title="${encodeURIComponent(result.title)}" data-poster-path="${result.poster_path || ''}" data-release-year="${releaseYear}">İzlediklerime Ekle</button></div></div>`;
+                        let ratingHtml = '';
+                        if (result.vote_average && result.vote_average > 0) {
+                            ratingHtml = `
+                            <div class="flex items-center gap-1 text-yellow-400 text-xs mb-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                                <span class="font-bold">${result.vote_average.toFixed(1)}</span>
+                            </div>`;
+                        }
+                        const movieCard = `
+                        <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg movie-card flex flex-col group relative">
+                            <img src="${posterPath}" alt="${result.title}" class="w-full h-56 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';">
+                            <div class="absolute inset-0 bg-black bg-opacity-70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col p-3 justify-end">
+                                <h3 class="font-bold text-sm text-white">${result.title}</h3>
+                                <p class="text-gray-400 text-xs mb-1">${releaseYear}</p>
+                                ${ratingHtml}
+                                <div class="space-y-1.5 mt-1">
+                                    <button class="add-movie-btn w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-1 px-2 text-xs rounded-lg" data-tmdb-id="${result.id}" data-title="${encodeURIComponent(result.title)}" data-poster-path="${result.poster_path || ''}" data-release-year="${releaseYear}">İzledim</button>
+                                    <button class="add-to-watchlist-btn-from-search w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1 px-2 text-xs rounded-lg" data-tmdb-id="${result.id}" data-title="${encodeURIComponent(result.title)}" data-poster-path="${result.poster_path || ''}" data-release-year="${releaseYear}">İzleme Listesi</button>
+                                </div>
+                            </div>
+                            <button class="info-movie-btn-from-search absolute top-2 right-2 p-1.5 bg-black bg-opacity-60 rounded-full text-white hover:bg-opacity-80" title="Film Bilgileri" data-tmdb-id="${result.id}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>`;
                         searchResultsContainer.innerHTML += movieCard;
                     } else if (result.media_type === 'person') {
                         const profilePath = result.profile_path ? `https://image.tmdb.org/t/p/w500${result.profile_path}` : 'https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';
-                        const personCard = `<div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg movie-card flex flex-col"><div class="w-full h-48 bg-gray-700 flex items-center justify-center"><img src="${profilePath}" alt="${result.name}" class="w-full h-full object-contain" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';"></div><div class="p-3 flex flex-col flex-grow"><h3 class="font-bold text-sm text-white">${result.name}</h3><p class="text-gray-400 text-xs mb-2">${result.known_for_department}</p><button class="show-person-movies-btn mt-auto w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-2 text-sm rounded-lg" data-person-id="${result.id}">Filmlerini Göster</button></div></div>`;
+                        const personCard = `
+                        <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg movie-card flex flex-col group">
+                            <img src="${profilePath}" alt="${result.name}" class="w-full h-56 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';">
+                            <div class="p-3 flex flex-col flex-grow">
+                                <h3 class="font-bold text-sm text-white">${result.name}</h3>
+                                <p class="text-gray-400 text-xs mb-2">${result.known_for_department}</p>
+                                <button class="show-person-movies-btn mt-auto w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-2 text-xs rounded-lg" data-person-id="${result.id}">Filmlerini Göster</button>
+                            </div>
+                        </div>`;
                         searchResultsContainer.innerHTML += personCard;
                     }
                 });
@@ -1148,6 +1181,18 @@
                 const posterPath = details.poster_path ? `https://image.tmdb.org/t/p/w500${details.poster_path}` : 'https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';
                 const releaseYear = details.release_date ? details.release_date.split('-')[0] : 'N/A';
                 
+                let ratingHtml = '';
+                if (details.vote_average && details.vote_average > 0) {
+                    ratingHtml = `
+                        <div class="flex items-center gap-2 text-yellow-400 mt-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <span class="text-xl font-bold">${details.vote_average.toFixed(1)}</span>
+                            <span class="text-gray-400 text-sm">/ 10</span>
+                        </div>`;
+                }
+
                 let crewHtml = '';
                 if (details.credits && details.credits.crew) {
                     const crew = details.credits.crew; // Define crew here
@@ -1175,6 +1220,7 @@
                         <img src="${posterPath}" class="w-full md:w-1/3 object-cover rounded-l-xl" alt="${details.title}">
                         <div class="p-6 flex flex-col">
                             <h2 class="text-3xl font-bold text-white">${details.title} <span class="text-xl text-gray-400">(${releaseYear})</span></h2>
+                            ${ratingHtml}
                             <p class="text-gray-300 mt-4">${details.overview || 'Açıklama bulunamadı.'}</p>
                             <div class="mt-4 text-sm">
                                 ${crewHtml}
@@ -1293,10 +1339,11 @@
                 const addDvdBtn = e.target.closest('.add-dvd-btn');
                 const deleteDvdBtn = e.target.closest('.delete-dvd-btn');
                 const analysisItem = e.target.closest('.analysis-item');
-                const infoBtn = e.target.closest('.info-movie-btn, .info-dvd-btn, .info-watchlist-btn');
+                const infoBtn = e.target.closest('.info-movie-btn, .info-dvd-btn, .info-watchlist-btn, .info-movie-btn-from-search');
                 const addToWatchlistBtn = e.target.closest('.add-to-watchlist-btn');
                 const deleteWatchlistItemBtn = e.target.closest('.delete-watchlist-item-btn');
                 const markAsWatchedBtn = e.target.closest('.mark-as-watched-btn');
+                const addToWatchlistFromSearchBtn = e.target.closest('.add-to-watchlist-btn-from-search');
 
                 if (addBtn) {
                     addBtn.disabled = true;
@@ -1308,6 +1355,26 @@
                     if (result.status === 'success') showNotification(`"${movieData.title}" eklendi!`, false);
                     else if (result.status === 'duplicate') showNotification(`"${movieData.title}" zaten listenizde!`, true);
                     else showNotification('Film eklenirken bir hata oluştu.', true);
+                }
+                 if (addToWatchlistFromSearchBtn) {
+                    addToWatchlistFromSearchBtn.disabled = true;
+                    addToWatchlistFromSearchBtn.textContent = 'Eklendi';
+                    addToWatchlistFromSearchBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                    addToWatchlistFromSearchBtn.classList.add('bg-gray-500', 'cursor-not-allowed');
+                    const movieData = { 
+                        tmdbId: addToWatchlistFromSearchBtn.dataset.tmdbId, 
+                        title: decodeURIComponent(addToWatchlistFromSearchBtn.dataset.title), 
+                        posterPath: addToWatchlistFromSearchBtn.dataset.posterPath, 
+                        releaseYear: addToWatchlistFromSearchBtn.dataset.releaseYear 
+                    };
+                    const result = await addMovieToWatchlist(movieData);
+                    if (result.status === 'success') {
+                        showNotification(`"${movieData.title}" izleme listesine eklendi!`, false);
+                    } else if (result.status === 'duplicate') {
+                        showNotification(`"${movieData.title}" zaten izleme listesinde!`, true);
+                    } else {
+                        showNotification('Film eklenirken bir hata oluştu.', true);
+                    }
                 }
                 if (addDvdBtn) {
                     addDvdBtn.disabled = true;
