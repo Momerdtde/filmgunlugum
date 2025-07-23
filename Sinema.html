@@ -1193,6 +1193,18 @@
                         </div>`;
                 }
 
+                let providersHtml = '';
+                if (details['watch/providers']?.results?.TR?.flatrate && details['watch/providers'].results.TR.flatrate.length > 0) {
+                    const providerLogos = details['watch/providers'].results.TR.flatrate.map(p => 
+                        `<img src="https://image.tmdb.org/t/p/w45${p.logo_path}" alt="${p.provider_name}" title="${p.provider_name}" class="w-10 h-10 rounded-lg">`
+                    ).join('');
+                    providersHtml = `
+                        <div class="mt-4">
+                            <p class="text-cyan-400 font-semibold mb-2">Platformlar (TR):</p>
+                            <div class="flex flex-wrap gap-3">${providerLogos}</div>
+                        </div>`;
+                }
+
                 let crewHtml = '';
                 if (details.credits && details.credits.crew) {
                     const crew = details.credits.crew; // Define crew here
@@ -1226,6 +1238,7 @@
                                 ${crewHtml}
                                 ${castHtml}
                             </div>
+                            ${providersHtml}
                         </div>
                     </div>
                 `;
