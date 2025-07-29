@@ -331,6 +331,17 @@
             <!-- Content will be injected by JS -->
         </div>
     </div>
+    
+    <div id="notesModal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-gray-800 max-w-lg w-full rounded-xl shadow-lg relative p-6">
+            <h3 id="notesModalTitle" class="text-2xl font-bold text-white mb-4">Film Notları</h3>
+            <textarea id="notesModalTextarea" class="w-full h-48 p-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Bu filmle ilgili notların..."></textarea>
+            <div class="mt-4 flex justify-end gap-4">
+                <button id="closeNotesModalBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg">Kapat</button>
+                <button id="saveNotesModalBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg">Kaydet</button>
+            </div>
+        </div>
+    </div>
 
 
     <script type="module">
@@ -440,6 +451,11 @@
             const movieInfoModalContent = document.getElementById('movieInfoModalContent');
             const directorAnalysisList = document.getElementById('directorAnalysis');
             const actorAnalysisList = document.getElementById('actorAnalysis');
+            const notesModal = document.getElementById('notesModal');
+            const notesModalTitle = document.getElementById('notesModalTitle');
+            const notesModalTextarea = document.getElementById('notesModalTextarea');
+            const closeNotesModalBtn = document.getElementById('closeNotesModalBtn');
+            const saveNotesModalBtn = document.getElementById('saveNotesModalBtn');
 
             // --- APP INITIALIZATION ---
             (async () => {
@@ -721,7 +737,7 @@
                     const providerLogos = movie.watchProviders.map(p => `<img src="https://image.tmdb.org/t/p/w45${p.logo_path}" alt="${p.provider_name}" title="${p.provider_name}" class="w-8 h-8 rounded-md">`).join('');
                     providersHtml = `<div class="mt-4"><p class="text-xs text-gray-400 mb-1">Platformlar (TR):</p><div class="flex flex-wrap gap-2">${providerLogos}</div></div>`;
                 }
-                movieElement.innerHTML = `<div class="w-full md:w-48 bg-gray-700 flex-shrink-0 flex items-center justify-center"><img src="${posterPath}" alt="${movie.title}" class="w-full h-full object-contain" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';"></div><div class="p-6 flex flex-col flex-grow"><div class="flex-shrink-0"><div class="flex justify-between items-start"><h3 class="text-2xl font-bold text-white pr-2">${movie.title}</h3>${ratingHtml}</div><div class="flex items-center flex-wrap gap-y-2 my-2">${genreTags}</div><p class="text-gray-400 mb-2">${movie.releaseYear}</p>${directorHtml}${castHtml}${writerHtml}${dopHtml}${producerHtml}${providersHtml}</div><textarea class="notes-textarea w-full h-24 p-3 mt-4 bg-gray-700 border border-gray-600 rounded-lg" data-doc-id="${movie.id}" placeholder="Bu filmle ilgili notların...">${movie.notes || ''}</textarea><div class="mt-auto pt-4 flex flex-col sm:flex-row gap-3"><button class="save-notes-btn w-full sm:w-auto flex-grow bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg" data-doc-id="${movie.id}">Notları Kaydet</button><button class="delete-movie-btn w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg" data-doc-id="${movie.id}">Filmi Sil</button><button class="info-movie-btn p-2 bg-blue-600 hover:bg-blue-700 rounded-lg" title="Film Bilgileri" data-tmdb-id="${movie.tmdbId}"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg></button><button class="update-movie-btn p-2 bg-gray-600 hover:bg-gray-700 rounded-lg" title="Bilgileri Yenile" data-doc-id="${movie.id}" data-tmdb-id="${movie.tmdbId}"><svg class="w-5 h-5 text-white pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.664 0l3.181-3.183m-4.991-2.693L7.985 5.959m0 0a8.25 8.25 0 0111.664 0l3.181 3.183" /></svg></button></div></div>`;
+                movieElement.innerHTML = `<div class="w-full md:w-48 bg-gray-700 flex-shrink-0 flex items-center justify-center"><img src="${posterPath}" alt="${movie.title}" class="w-full h-full object-contain" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';"></div><div class="p-6 flex flex-col flex-grow"><div class="flex-shrink-0"><div class="flex justify-between items-start"><h3 class="text-2xl font-bold text-white pr-2">${movie.title}</h3>${ratingHtml}</div><div class="flex items-center flex-wrap gap-y-2 my-2">${genreTags}</div><p class="text-gray-400 mb-2">${movie.releaseYear}</p>${directorHtml}${castHtml}${writerHtml}${dopHtml}${producerHtml}${providersHtml}</div><div class="mt-auto pt-4 flex flex-wrap gap-3"><button class="delete-movie-btn p-2 bg-red-600 hover:bg-red-700 rounded-lg" title="Filmi Sil" data-doc-id="${movie.id}"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg></button><button class="show-notes-btn p-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg" title="Notları Görüntüle/Düzenle" data-doc-id="${movie.id}"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clip-rule="evenodd" /></svg></button><button class="info-movie-btn p-2 bg-blue-600 hover:bg-blue-700 rounded-lg" title="Film Bilgileri" data-tmdb-id="${movie.tmdbId}"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg></button><button class="update-movie-btn p-2 bg-gray-600 hover:bg-gray-700 rounded-lg" title="Bilgileri Yenile" data-doc-id="${movie.id}" data-tmdb-id="${movie.tmdbId}"><svg class="w-5 h-5 text-white pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.664 0l3.181-3.183m-4.991-2.693L7.985 5.959m0 0a8.25 8.25 0 0111.664 0l3.181 3.183" /></svg></button></div></div>`;
                 watchedListContainer.appendChild(movieElement);
             }
 
@@ -1341,11 +1357,20 @@
                     movieInfoModal.classList.add('hidden');
                 }
             });
+            
+            closeNotesModalBtn.addEventListener('click', () => notesModal.classList.add('hidden'));
+            
+            saveNotesModalBtn.addEventListener('click', () => {
+                const docId = saveNotesModalBtn.dataset.docId;
+                if (docId) {
+                    updateNotesInFirestore(docId, notesModalTextarea.value);
+                    notesModal.classList.add('hidden');
+                }
+            });
 
             // --- DELEGATED EVENT LISTENER FOR DYNAMIC CONTENT ---
             document.addEventListener('click', async (e) => {
                 const addBtn = e.target.closest('.add-movie-btn');
-                const saveNotesBtn = e.target.closest('.save-notes-btn');
                 const deleteBtn = e.target.closest('.delete-movie-btn');
                 const updateBtn = e.target.closest('.update-movie-btn');
                 const personBtn = e.target.closest('.show-person-movies-btn');
@@ -1357,7 +1382,18 @@
                 const deleteWatchlistItemBtn = e.target.closest('.delete-watchlist-item-btn');
                 const markAsWatchedBtn = e.target.closest('.mark-as-watched-btn');
                 const addToWatchlistFromSearchBtn = e.target.closest('.add-to-watchlist-btn-from-search');
+                const showNotesBtn = e.target.closest('.show-notes-btn');
 
+                if (showNotesBtn) {
+                    const docId = showNotesBtn.dataset.docId;
+                    const movie = watchedMoviesList.find(m => m.id === docId);
+                    if (movie) {
+                        notesModalTitle.textContent = `${movie.title} - Notlar`;
+                        notesModalTextarea.value = movie.notes || '';
+                        saveNotesModalBtn.dataset.docId = docId;
+                        notesModal.classList.remove('hidden');
+                    }
+                }
                 if (addBtn) {
                     addBtn.disabled = true;
                     addBtn.textContent = 'Eklendi';
@@ -1410,11 +1446,6 @@
                     if (result.status === 'success') showNotification(`"${movieData.title}" izleme listesine eklendi!`, false);
                     else if (result.status === 'duplicate') showNotification(`"${movieData.title}" zaten izleme listesinde!`, true);
                     else showNotification('Film eklenirken bir hata oluştu.', true);
-                }
-                if (saveNotesBtn) {
-                    const docId = saveNotesBtn.dataset.docId;
-                    const notesTextarea = document.querySelector(`.notes-textarea[data-doc-id='${docId}']`);
-                    if (notesTextarea) updateNotesInFirestore(docId, notesTextarea.value);
                 }
                 if (deleteBtn) {
                     confirmModalMessage.textContent = "Bu filmi izlediklerim listesinden silmek istediğinizden emin misiniz?";
