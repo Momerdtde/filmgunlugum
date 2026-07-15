@@ -383,6 +383,20 @@
         // Enable Firestore logging for debugging
         setLogLevel('debug');
 
+        function getSortableDate(dateVal) {
+            if (!dateVal) return 0;
+            if (typeof dateVal.toDate === 'function') return dateVal.toDate().getTime();
+            return new Date(dateVal).getTime();
+        }
+
+        function formatDate(dateVal) {
+            if (!dateVal) return '';
+            let d;
+            if (typeof dateVal.toDate === 'function') d = dateVal.toDate();
+            else d = new Date(dateVal);
+            return d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             // --- DOM ELEMENTS ---
             const loadingOverlay = document.getElementById('loadingOverlay');
@@ -562,7 +576,7 @@
                     listLoader.classList.add('hidden');
                     watchedMoviesList = [];
                     snapshot.forEach(doc => watchedMoviesList.push({ id: doc.id, ...doc.data() }));
-                    watchedMoviesList.sort((a, b) => a.title.localeCompare(b.title, 'tr'));
+                    watchedMoviesList.sort((a, b) => getSortableDate(b.addedAt) - getSortableDate(a.addedAt));
                     watchedCount.textContent = watchedMoviesList.length;
                     populateGenreFilter();
                     filterAndDisplayWatchedMovies();
@@ -744,7 +758,11 @@
                     const providerLogos = movie.watchProviders.map(p => `<img src="https://image.tmdb.org/t/p/w45${p.logo_path}" alt="${p.provider_name}" title="${p.provider_name}" class="w-8 h-8 rounded-md">`).join('');
                     providersHtml = `<div class="mt-4"><p class="text-xs text-gray-400 mb-1">Platformlar (TR):</p><div class="flex flex-wrap gap-2">${providerLogos}</div></div>`;
                 }
-                movieElement.innerHTML = `<div class="w-full md:w-48 bg-gray-700 flex-shrink-0 flex items-center justify-center"><img src="${posterPath}" alt="${movie.title}" class="w-full h-full object-contain" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';"></div><div class="p-6 flex flex-col flex-grow"><div class="flex-shrink-0"><div class="flex justify-between items-start"><h3 class="text-2xl font-bold text-white pr-2">${movie.title}</h3>${ratingHtml}</div><div class="flex items-center flex-wrap gap-y-2 my-2">${genreTags}</div><p class="text-gray-400 mb-2">${movie.releaseYear}</p>${directorHtml}${castHtml}${writerHtml}${dopHtml}${producerHtml}${providersHtml}</div><div class="mt-auto pt-4 flex flex-wrap gap-3"><button class="delete-movie-btn p-2 bg-red-600 hover:bg-red-700 rounded-lg" title="Filmi Sil" data-doc-id="${movie.id}"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg></button><button class="show-notes-btn p-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg" title="Notları Görüntüle/Düzenle" data-doc-id="${movie.id}"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clip-rule="evenodd" /></svg></button><button class="info-movie-btn p-2 bg-blue-600 hover:bg-blue-700 rounded-lg" title="Film Bilgileri" data-tmdb-id="${movie.tmdbId}"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg></button><button class="update-movie-btn p-2 bg-gray-600 hover:bg-gray-700 rounded-lg" title="Bilgileri Yenile" data-doc-id="${movie.id}" data-tmdb-id="${movie.tmdbId}"><svg class="w-5 h-5 text-white pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.664 0l3.181-3.183m-4.991-2.693L7.985 5.959m0 0a8.25 8.25 0 0111.664 0l3.181 3.183" /></svg></button></div></div>`;
+
+                let addedAtStr = formatDate(movie.addedAt);
+                let addedAtHtml = addedAtStr ? `<div class="flex items-center gap-1 text-gray-400 text-xs bg-gray-900 px-2 py-1 rounded-md mb-2 w-fit border border-gray-700"><svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> Eklenme: ${addedAtStr}</div>` : '';
+
+                movieElement.innerHTML = `<div class="w-full md:w-48 bg-gray-700 flex-shrink-0 flex items-center justify-center"><img src="${posterPath}" alt="${movie.title}" class="w-full h-full object-contain" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';"></div><div class="p-6 flex flex-col flex-grow"><div class="flex-shrink-0"><div class="flex justify-between items-start"><h3 class="text-2xl font-bold text-white pr-2">${movie.title}</h3>${ratingHtml}</div><div class="flex items-center flex-wrap gap-y-2 my-2">${genreTags}</div><div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-2"><p class="text-gray-400">${movie.releaseYear}</p>${addedAtHtml}</div>${directorHtml}${castHtml}${writerHtml}${dopHtml}${producerHtml}${providersHtml}</div><div class="mt-auto pt-4 flex flex-wrap gap-3"><button class="delete-movie-btn p-2 bg-red-600 hover:bg-red-700 rounded-lg" title="Filmi Sil" data-doc-id="${movie.id}"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg></button><button class="show-notes-btn p-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg" title="Notları Görüntüle/Düzenle" data-doc-id="${movie.id}"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clip-rule="evenodd" /></svg></button><button class="info-movie-btn p-2 bg-blue-600 hover:bg-blue-700 rounded-lg" title="Film Bilgileri" data-tmdb-id="${movie.tmdbId}"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg></button><button class="update-movie-btn p-2 bg-gray-600 hover:bg-gray-700 rounded-lg" title="Bilgileri Yenile" data-doc-id="${movie.id}" data-tmdb-id="${movie.tmdbId}"><svg class="w-5 h-5 text-white pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.664 0l3.181-3.183m-4.991-2.693L7.985 5.959m0 0a8.25 8.25 0 0111.664 0l3.181 3.183" /></svg></button></div></div>`;
                 watchedListContainer.appendChild(movieElement);
             }
 
@@ -798,10 +816,12 @@
                 const posterPath = dvd.posterPath ? `https://image.tmdb.org/t/p/w500${dvd.posterPath}` : 'https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';
                 const dvdElement = document.createElement('div');
                 dvdElement.className = 'relative group';
+                let addedAtStr = formatDate(dvd.addedAt);
                 dvdElement.innerHTML = `
                     <img src="${posterPath}" alt="${dvd.title}" class="w-full h-full object-cover rounded-lg shadow-lg" loading="lazy">
                     <div class="absolute inset-0 bg-black bg-opacity-75 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2 rounded-lg">
                         <p class="text-white text-center font-bold text-sm">${dvd.title}</p>
+                        ${addedAtStr ? `<p class="text-gray-400 text-xs mt-1">${addedAtStr}</p>` : ''}
                         <div class="mt-2 flex gap-2">
                            <button class="info-dvd-btn bg-blue-600 text-white p-2 rounded-full" data-tmdb-id="${dvd.tmdbId}" title="Bilgi">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
@@ -850,7 +870,7 @@
                     title: decodeURIComponent(dvdData.title),
                     posterPath: dvdData.posterPath,
                     tmdbId: dvdData.tmdbId,
-                    addedAt: new Date(),
+                    addedAt: dvdData.addedAt || new Date().toISOString(),
                     // --- ADD NEW FIELDS ---
                     releaseYear: releaseYear,
                     director: director,
@@ -886,14 +906,16 @@
                     watchlistContainer.innerHTML = `<p class="col-span-full text-center text-gray-400">İzleme listeniz boş.</p>`;
                     return;
                 }
-                watchlistMovies.sort((a,b) => a.title.localeCompare(b.title, 'tr')).forEach(movie => {
+                watchlistMovies.sort((a,b) => getSortableDate(b.addedAt) - getSortableDate(a.addedAt)).forEach(movie => {
                     const posterPath = movie.posterPath ? `https://image.tmdb.org/t/p/w500${movie.posterPath}` : 'https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';
                     const movieElement = document.createElement('div');
                     movieElement.className = 'relative group';
+                    let addedAtStr = formatDate(movie.addedAt);
                     movieElement.innerHTML = `
                         <img src="${posterPath}" alt="${movie.title}" class="w-full h-full object-cover rounded-lg shadow-lg" loading="lazy">
                         <div class="absolute inset-0 bg-black bg-opacity-75 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2 rounded-lg text-center">
                             <p class="text-white font-bold text-sm">${movie.title}</p>
+                            ${addedAtStr ? `<p class="text-gray-400 text-xs mt-1">${addedAtStr}</p>` : ''}
                             <div class="mt-2 flex gap-2">
                                 <button class="mark-as-watched-btn bg-green-600 text-white p-2 rounded-full" data-doc-id="${movie.id}" title="İzledim Olarak İşaretle">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
@@ -952,7 +974,8 @@
                      title: movieToMove.title,
                      posterPath: movieToMove.posterPath,
                      releaseYear: movieToMove.releaseYear,
-                     notes: ''
+                     notes: '',
+                     addedAt: new Date().toISOString()
                  });
 
                  if (addResult.status === 'success') {
@@ -1102,7 +1125,7 @@
                 });
                 dvdListContainer.innerHTML = '';
                 if (filteredDvds.length > 0) {
-                    filteredDvds.sort((a,b) => a.title.localeCompare(b.title, 'tr')).forEach(displayDvd);
+                    filteredDvds.sort((a,b) => getSortableDate(b.addedAt) - getSortableDate(a.addedAt)).forEach(displayDvd);
                 } else {
                     if (dvdCollectionList.length > 0) {
                          dvdListContainer.innerHTML = `<p class="col-span-full text-center text-gray-400">Arama kriterlerinize uygun DVD bulunamadı.</p>`;
@@ -1115,20 +1138,18 @@
             
             function exportToCSV() {
                 if (watchedMoviesList.length === 0) { showNotification("Dışa aktarılacak film yok.", true); return; }
-                let csvContent = "data:text/csv;charset=utf-8,";
-                // --- UPDATE HEADERS ---
-                csvContent += ["Baslik", "Yil", "Yonetmen", "Turler", "Notlar"].join(",") + "\r\n";
-                // --- END UPDATE ---
+                // UTF-8 BOM ekleyerek Excel'de Türkçe karakter sorunu yaşanmasını önlüyoruz
+                let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+                csvContent += ["Baslik", "Yil", "Yonetmen", "Turler", "Eklenme Tarihi", "Notlar"].join(",") + "\r\n";
                 watchedMoviesList.forEach(movie => {
-                    // --- UPDATE ROW ---
                     const row = [
                         `"${movie.title.replace(/"/g, '""')}"`, 
                         movie.releaseYear, 
                         `"${movie.director ? movie.director.replace(/"/g, '""') : ''}"`,
                         `"${movie.genres ? movie.genres.join(', ') : ''}"`, 
+                        `"${formatDate(movie.addedAt)}"`,
                         `"${movie.notes ? movie.notes.replace(/"/g, '""').replace(/\n/g, ' ') : ''}"`
                     ].join(",");
-                    // --- END UPDATE ---
                     csvContent += row + "\r\n";
                 });
                 const link = document.createElement("a");
@@ -1139,16 +1160,16 @@
                 document.body.removeChild(link);
             }
 
-            // --- ADD NEW FUNCTION ---
             function exportDvdToCSV() {
                 if (dvdCollectionList.length === 0) { showNotification("Dışa aktarılacak koleksiyon filmi yok.", true); return; }
-                let csvContent = "data:text/csv;charset=utf-8,";
-                csvContent += ["Baslik", "Yil", "Yonetmen"].join(",") + "\r\n";
+                let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+                csvContent += ["Baslik", "Yil", "Yonetmen", "Eklenme Tarihi"].join(",") + "\r\n";
                 dvdCollectionList.forEach(dvd => {
                     const row = [
                         `"${dvd.title.replace(/"/g, '""')}"`, 
                         dvd.releaseYear || 'N/A', 
-                        `"${dvd.director ? dvd.director.replace(/"/g, '""') : ''}"`
+                        `"${dvd.director ? dvd.director.replace(/"/g, '""') : ''}"`,
+                        `"${formatDate(dvd.addedAt)}"`
                     ].join(",");
                     csvContent += row + "\r\n";
                 });
@@ -1159,7 +1180,6 @@
                 link.click();
                 document.body.removeChild(link);
             }
-            // --- END ADD NEW FUNCTION ---
 
             async function handleBulkAdd() {
                 const text = bulkAddTextarea.value.trim();
@@ -1177,7 +1197,7 @@
                     if (searchData && searchData.results.length > 0) {
                         const movie = searchData.results.find(r => r.media_type === 'movie');
                         if (movie) {
-                            const movieData = { tmdbId: movie.id.toString(), title: movie.title, posterPath: movie.poster_path || '', releaseYear: movie.release_date ? movie.release_date.split('-')[0] : 'N/A', notes: '' };
+                            const movieData = { tmdbId: movie.id.toString(), title: movie.title, posterPath: movie.poster_path || '', releaseYear: movie.release_date ? movie.release_date.split('-')[0] : 'N/A', notes: '', addedAt: new Date().toISOString() };
                             const result = await addMovieToFirestore(movieData);
                             if (result.status === 'success') {
                                 addedCount++;
@@ -1522,7 +1542,7 @@
                     addBtn.textContent = 'Eklendi';
                     addBtn.classList.remove('bg-cyan-600', 'hover:bg-cyan-700');
                     addBtn.classList.add('bg-gray-500', 'cursor-not-allowed');
-                    const movieData = { tmdbId: addBtn.dataset.tmdbId, title: decodeURIComponent(addBtn.dataset.title), posterPath: addBtn.dataset.posterPath, releaseYear: addBtn.dataset.releaseYear, notes: '' };
+                    const movieData = { tmdbId: addBtn.dataset.tmdbId, title: decodeURIComponent(addBtn.dataset.title), posterPath: addBtn.dataset.posterPath, releaseYear: addBtn.dataset.releaseYear, notes: '', addedAt: new Date().toISOString() };
                     const result = await addMovieToFirestore(movieData);
                     if (result.status === 'success') showNotification(`"${movieData.title}" eklendi!`, false);
                     else if (result.status === 'duplicate') showNotification(`"${movieData.title}" zaten listenizde!`, true);
@@ -1537,7 +1557,8 @@
                         tmdbId: addToWatchlistFromSearchBtn.dataset.tmdbId, 
                         title: decodeURIComponent(addToWatchlistFromSearchBtn.dataset.title), 
                         posterPath: addToWatchlistFromSearchBtn.dataset.posterPath, 
-                        releaseYear: addToWatchlistFromSearchBtn.dataset.releaseYear 
+                        releaseYear: addToWatchlistFromSearchBtn.dataset.releaseYear,
+                        addedAt: new Date().toISOString()
                     };
                     const result = await addMovieToWatchlist(movieData);
                     if (result.status === 'success') {
@@ -1557,7 +1578,8 @@
                         tmdbId: addToCollectionFromSearchBtn.dataset.tmdbId, 
                         title: decodeURIComponent(addToCollectionFromSearchBtn.dataset.title), 
                         posterPath: addToCollectionFromSearchBtn.dataset.posterPath,
-                        releaseYear: addToCollectionFromSearchBtn.dataset.releaseYear
+                        releaseYear: addToCollectionFromSearchBtn.dataset.releaseYear,
+                        addedAt: new Date().toISOString()
                     };
                     const result = await addDvdToFirestore(dvdData);
                     if (result.status === 'success') {
@@ -1577,7 +1599,8 @@
                         tmdbId: addDvdBtn.dataset.tmdbId, 
                         title: decodeURIComponent(addDvdBtn.dataset.title), 
                         posterPath: addDvdBtn.dataset.posterPath,
-                        releaseYear: addDvdBtn.dataset.releaseYear
+                        releaseYear: addDvdBtn.dataset.releaseYear,
+                        addedAt: new Date().toISOString()
                     };
                     const result = await addDvdToFirestore(dvdData);
                     if (result.status === 'success') showNotification(`"${dvdData.title}" koleksiyona eklendi!`, false);
@@ -1589,7 +1612,7 @@
                     addToWatchlistBtn.textContent = 'Eklendi';
                     addToWatchlistBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
                     addToWatchlistBtn.classList.add('bg-gray-500', 'cursor-not-allowed');
-                    const movieData = { tmdbId: addToWatchlistBtn.dataset.tmdbId, title: decodeURIComponent(addToWatchlistBtn.dataset.title), posterPath: addToWatchlistBtn.dataset.posterPath, releaseYear: addToWatchlistBtn.dataset.releaseYear };
+                    const movieData = { tmdbId: addToWatchlistBtn.dataset.tmdbId, title: decodeURIComponent(addToWatchlistBtn.dataset.title), posterPath: addToWatchlistBtn.dataset.posterPath, releaseYear: addToWatchlistBtn.dataset.releaseYear, addedAt: new Date().toISOString() };
                     const result = await addMovieToWatchlist(movieData);
                     if (result.status === 'success') showNotification(`"${movieData.title}" izleme listesine eklendi!`, false);
                     else if (result.status === 'duplicate') showNotification(`"${movieData.title}" zaten izleme listesinde!`, true);
@@ -1663,4 +1686,3 @@
     </script>
 </body>
 </html>
-
