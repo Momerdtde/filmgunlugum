@@ -143,7 +143,7 @@
     </div>
 
     <main>
-        <!-- STREAMING_CHUNK:Rendering main search section... -->
+        <!-- STREAMING_CHUNK:Rendering main content area... -->
         <div id="mainContent">
             <div class="mb-8 p-6 bg-gray-950 border border-gray-800 rounded-xl shadow-lg">
                 <h2 class="text-2xl font-bold mb-4 text-white">Yeni Film Ekle</h2>
@@ -192,7 +192,7 @@
             </div>
         </div>
 
-        <!-- STREAMING_CHUNK:Rendering Watchlist section... -->
+        <!-- STREAMING_CHUNK:Rendering Watchlist tab content... -->
         <div id="watchlistContent" class="hidden">
             <div class="mb-8 p-6 bg-gray-950 border border-gray-800 rounded-xl shadow-lg">
                 <h2 class="text-2xl font-bold mb-4 text-white">İzleme Listesine Film Ekle</h2>
@@ -222,7 +222,7 @@
             </div>
         </div>
 
-        <!-- STREAMING_CHUNK:Rendering Collection section... -->
+        <!-- STREAMING_CHUNK:Rendering Collection tab content... -->
         <div id="collectionContent" class="hidden">
             <div class="mb-8 p-6 bg-gray-950 border border-gray-800 rounded-xl shadow-lg">
                 <h2 class="text-2xl font-bold mb-4 text-white">Koleksiyona DVD Ekle</h2>
@@ -262,7 +262,7 @@
             </div>
         </div>
 
-        <!-- STREAMING_CHUNK:Rendering Analysis section... -->
+        <!-- STREAMING_CHUNK:Rendering Analysis tab content... -->
         <div id="analysisContent" class="hidden">
             <h2 class="text-3xl font-bold text-white mb-6 border-b border-gray-800 pb-4">İzleme Analizi</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -277,7 +277,7 @@
             </div>
         </div>
 
-        <!-- STREAMING_CHUNK:Rendering Settings section... -->
+        <!-- STREAMING_CHUNK:Rendering Settings tab content... -->
         <div id="settingsContent" class="hidden">
             <div id="settingsSection" class="mb-8 p-6 bg-gray-950 border border-gray-800 rounded-xl shadow-lg">
                 <h2 class="text-2xl font-bold mb-4 text-white">Kullanıcı Bilgileri</h2>
@@ -359,7 +359,7 @@
     </div>
 </div>
 
-<!-- STREAMING_CHUNK:Initializing JS module logic... -->
+<!-- STREAMING_CHUNK:Initializing JS module script... -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -394,7 +394,7 @@
 
     setLogLevel('debug');
 
-    /* STREAMING_CHUNK:Defining Unicode transliteration and search normalization functions... */
+    /* STREAMING_CHUNK:Defining corrected normalization helper without string duplication... */
     function isNonLatin(str) {
         if (!str) return false;
         return /[^\u0000-\u024F\u1E00-\u1EFF\s\d.,'":;\-–—()]/u.test(str);
@@ -416,16 +416,17 @@
 
     function normalizeSearchText(str) {
         if (!str) return '';
-        const transliterated = transliterateToLatin(str);
-        return (str + ' ' + transliterated)
+        // Perform transliteration to latin then normalize accents
+        const latinText = transliterateToLatin(str);
+        return latinText
+            .replace(/İ/g, "i").replace(/I/g, "i").replace(/ı/g, "i")
+            .replace(/Ğ/g, "g").replace(/ğ/g, "g")
+            .replace(/Ü/g, "u").replace(/ü/g, "u")
+            .replace(/Ş/g, "s").replace(/ş/g, "s")
+            .replace(/Ö/g, "o").replace(/ö/g, "o")
+            .replace(/Ç/g, "c").replace(/ç/g, "c")
             .normalize("NFD")
             .replace(/[\u0300-\u036f]/g, "")
-            .replace(/ı/g, "i").replace(/I/g, "i").replace(/İ/g, "i")
-            .replace(/ğ/g, "g").replace(/Ğ/g, "g")
-            .replace(/ü/g, "u").replace(/Ü/g, "u")
-            .replace(/ş/g, "s").replace(/Ş/g, "s")
-            .replace(/ö/g, "o").replace(/Ö/g, "o")
-            .replace(/ç/g, "c").replace(/Ç/g, "c")
             .toLowerCase()
             .trim();
     }
@@ -695,7 +696,7 @@
             }
         }
         
-        /* STREAMING_CHUNK:Executing TMDB search with raw clean string... */
+        // TMDB API & FIRESTORE SEARCH
         async function performMultiSearch(queryText, page = 1) {
             if (!TMDB_API_KEY) { showNotification("TMDb API anahtarı eksik.", true); return null; }
             const searchLoader = document.getElementById('search-loader');
@@ -1704,7 +1705,7 @@
             }
         });
 
-        /* STREAMING_CHUNK:Handling delegated click actions for movie cards... */
+        /* STREAMING_CHUNK:Handling delegated click actions for dynamic elements... */
         document.addEventListener('click', async (e) => {
             const addBtn = e.target.closest('.add-movie-btn');
             const deleteBtn = e.target.closest('.delete-movie-btn');
