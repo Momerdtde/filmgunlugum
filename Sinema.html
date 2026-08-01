@@ -112,7 +112,7 @@
     </div>
 </div>
 
-<!-- STREAMING_CHUNK:Rendering main app container and header... -->
+<!-- STREAMING_CHUNK:Rendering main app container and navigation... -->
 <div id="appContainer" class="container mx-auto p-4 md:p-8 max-w-4xl mb-24 hidden">
     <header class="text-center mb-8">
         <div class="cinema-title-container">
@@ -143,13 +143,13 @@
     </div>
 
     <main>
-        <!-- STREAMING_CHUNK:Rendering main tab contents... -->
+        <!-- STREAMING_CHUNK:Rendering main search section... -->
         <div id="mainContent">
             <div class="mb-8 p-6 bg-gray-950 border border-gray-800 rounded-xl shadow-lg">
                 <h2 class="text-2xl font-bold mb-4 text-white">Yeni Film Ekle</h2>
                 <form id="searchForm" class="flex flex-col sm:flex-row gap-4">
                     <div class="relative w-full">
-                        <input type="text" id="searchInput" class="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 text-white placeholder-gray-500 pr-10" placeholder="Film, yönetmen veya oyuncu ara (Latin, Çince, Farsça vb.)..." required>
+                        <input type="text" id="searchInput" class="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 text-white placeholder-gray-500 pr-10" placeholder="Film, yönetmen veya oyuncu ara..." required>
                         <button type="button" id="clearSearchInput" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-white hidden">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                         </button>
@@ -192,7 +192,7 @@
             </div>
         </div>
 
-        <!-- STREAMING_CHUNK:Rendering Watchlist tab content... -->
+        <!-- STREAMING_CHUNK:Rendering Watchlist section... -->
         <div id="watchlistContent" class="hidden">
             <div class="mb-8 p-6 bg-gray-950 border border-gray-800 rounded-xl shadow-lg">
                 <h2 class="text-2xl font-bold mb-4 text-white">İzleme Listesine Film Ekle</h2>
@@ -222,7 +222,7 @@
             </div>
         </div>
 
-        <!-- STREAMING_CHUNK:Rendering Collection tab content... -->
+        <!-- STREAMING_CHUNK:Rendering Collection section... -->
         <div id="collectionContent" class="hidden">
             <div class="mb-8 p-6 bg-gray-950 border border-gray-800 rounded-xl shadow-lg">
                 <h2 class="text-2xl font-bold mb-4 text-white">Koleksiyona DVD Ekle</h2>
@@ -262,7 +262,7 @@
             </div>
         </div>
 
-        <!-- STREAMING_CHUNK:Rendering Analysis tab content... -->
+        <!-- STREAMING_CHUNK:Rendering Analysis section... -->
         <div id="analysisContent" class="hidden">
             <h2 class="text-3xl font-bold text-white mb-6 border-b border-gray-800 pb-4">İzleme Analizi</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -277,7 +277,7 @@
             </div>
         </div>
 
-        <!-- STREAMING_CHUNK:Rendering Settings tab content... -->
+        <!-- STREAMING_CHUNK:Rendering Settings section... -->
         <div id="settingsContent" class="hidden">
             <div id="settingsSection" class="mb-8 p-6 bg-gray-950 border border-gray-800 rounded-xl shadow-lg">
                 <h2 class="text-2xl font-bold mb-4 text-white">Kullanıcı Bilgileri</h2>
@@ -394,22 +394,19 @@
 
     setLogLevel('debug');
 
-    /* STREAMING_CHUNK:Defining string normalization and non-Latin detection helpers... */
+    /* STREAMING_CHUNK:Defining Unicode transliteration and search normalization functions... */
     function isNonLatin(str) {
         if (!str) return false;
-        // Latin, Turkish Latin and common symbols range test
         return /[^\u0000-\u024F\u1E00-\u1EFF\s\d.,'":;\-–—()]/u.test(str);
     }
 
     function transliterateToLatin(str) {
         if (!str) return '';
         const charMap = {
-            // Arabic / Persian
             'ا':'a', 'أ':'a', 'إ':'a', 'آ':'a', 'ء':'', 'ب':'b', 'پ':'p', 'ت':'t', 'ث':'s', 'ج':'j', 'چ':'ch',
             'ح':'h', 'خ':'kh', 'د':'d', 'ذ':'z', 'ر':'r', 'ز':'z', 'ژ':'zh', 'س':'s', 'ش':'sh', 'ص':'s', 'ض':'z',
             'ط':'t', 'ظ':'z', 'ع':'a', 'غ':'gh', 'ف':'f', 'ق':'gh', 'ک':'k', 'ك':'k', 'گ':'g', 'ل':'l', 'م':'m',
             'ن':'n', 'و':'v', 'ه':'h', 'ی':'y', 'ي':'y', 'ة':'h', 'ئ':'y',
-            // Cyrillic
             'а':'a', 'б':'b', 'в':'v', 'г':'g', 'д':'d', 'е':'e', 'ё':'yo', 'ж':'zh', 'з':'z', 'и':'i', 'й':'y',
             'к':'k', 'л':'l', 'м':'m', 'н':'n', 'о':'o', 'п':'p', 'р':'r', 'с':'s', 'т':'t', 'у':'u', 'ф':'f',
             'х':'kh', 'ц':'ts', 'ч':'ch', 'ш':'sh', 'щ':'shch', 'ъ':'', 'ы':'y', 'ь':'', 'э':'e', 'ю':'yu', 'я':'ya'
@@ -698,7 +695,7 @@
             }
         }
         
-        /* STREAMING_CHUNK:Fetching parallel TR and EN movie details for dual-language support... */
+        /* STREAMING_CHUNK:Executing TMDB search with raw clean string... */
         async function performMultiSearch(queryText, page = 1) {
             if (!TMDB_API_KEY) { showNotification("TMDb API anahtarı eksik.", true); return null; }
             const searchLoader = document.getElementById('search-loader');
@@ -706,7 +703,8 @@
             paginationControls.innerHTML = '';
             searchLoader.classList.remove('hidden');
 
-            const url = `${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(queryText)}&language=tr-TR&include_adult=false&page=${page}`;
+            const cleanQuery = queryText.trim();
+            const url = `${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(cleanQuery)}&language=tr-TR&include_adult=false&page=${page}`;
             
             try {
                 const response = await fetch(url);
@@ -771,7 +769,7 @@
         }
 
         function displayMultiSearchResults(data) {
-            const results = data.results;
+            const results = data ? data.results : null;
             searchResultsContainer.innerHTML = '';
             if (!results || results.length === 0) {
                 searchResultsContainer.innerHTML = `<p class="col-span-full text-center text-gray-400">Sonuç bulunamadı.</p>`;
@@ -901,7 +899,6 @@
             watchedListContainer.appendChild(movieElement);
         }
 
-        /* STREAMING_CHUNK:Processing dual-language credits when saving movies... */
         async function addMovieToFirestore(movieData) {
             if (!userId) return { status: 'error' };
             const moviesCollection = collection(db, 'artifacts', appId, 'users', userId, 'movies');
@@ -1707,7 +1704,7 @@
             }
         });
 
-        /* STREAMING_CHUNK:Handling delegated click events for dynamic movie actions... */
+        /* STREAMING_CHUNK:Handling delegated click actions for movie cards... */
         document.addEventListener('click', async (e) => {
             const addBtn = e.target.closest('.add-movie-btn');
             const deleteBtn = e.target.closest('.delete-movie-btn');
