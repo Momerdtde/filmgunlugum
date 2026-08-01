@@ -149,7 +149,7 @@
                 <h2 class="text-2xl font-bold mb-4 text-white">Yeni Film Ekle</h2>
                 <form id="searchForm" class="flex flex-col sm:flex-row gap-4">
                     <div class="relative w-full">
-                        <input type="text" id="searchInput" class="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 text-white placeholder-gray-500 pr-10" placeholder="Film, yönetmen veya oyuncu ara..." required>
+                        <input type="text" id="searchInput" class="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 text-white placeholder-gray-500 pr-10" placeholder="Film, yönetmen veya oyuncu ara (Latin, Çince, Japonca vb.)..." required>
                         <button type="button" id="clearSearchInput" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-white hidden">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                         </button>
@@ -388,6 +388,29 @@
     let deleteAction = null;
 
     setLogLevel('debug');
+
+    // Latin karakter dönüştürücü (Doğu dilleri ve Türkçe arama uyumluluğu için)
+    function normalizeSearchText(str) {
+        if (!str) return '';
+        return str
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/ı/g, "i")
+            .replace(/I/g, "i")
+            .replace(/İ/g, "i")
+            .replace(/ğ/g, "g")
+            .replace(/Ğ/g, "g")
+            .replace(/ü/g, "u")
+            .replace(/Ü/g, "u")
+            .replace(/ş/g, "s")
+            .replace(/Ş/g, "s")
+            .replace(/ö/g, "o")
+            .replace(/Ö/g, "o")
+            .replace(/ç/g, "c")
+            .replace(/Ç/g, "c")
+            .toLowerCase()
+            .trim();
+    }
 
     function getSortableDate(dateVal) {
         if (!dateVal) return 0;
@@ -642,20 +665,28 @@
             }
         }
         
-        // TMDB API & FIRESTORE
-        async function performMultiSearch(query, page = 1) {
+        // TMDB API & FIRESTORE SEARCH WITH UNICODE FLEXIBILITY
+        async function performMultiSearch(queryText, page = 1) {
             if (!TMDB_API_KEY) { showNotification("TMDb API anahtarı eksik.", true); return null; }
             const searchLoader = document.getElementById('search-loader');
             searchResultsContainer.innerHTML = '';
             paginationControls.innerHTML = '';
             searchLoader.classList.remove('hidden');
-            const url = `${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&language=tr-TR&include_adult=false&page=${page}`;
+
+            // Normalize text for flexible Eastern/Latin transliteration matching
+            const normalizedQuery = normalizeSearchText(queryText);
+            const url = `${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(normalizedQuery)}&language=tr-TR&include_adult=false&page=${page}`;
+            
             try {
                 const response = await fetch(url);
                 if (!response.ok) return null;
                 return await response.json();
-            } catch (error) { console.error('Error fetching multi-search:', error); return null; } 
-            finally { searchLoader.classList.add('hidden'); }
+            } catch (error) { 
+                console.error('Error fetching multi-search:', error); 
+                return null; 
+            } finally { 
+                searchLoader.classList.add('hidden'); 
+            }
         }
 
         async function getMoviePosters(tmdbId) {
@@ -1153,12 +1184,12 @@
         }
 
         function filterAndDisplayWatchedMovies() {
-            const filterText = filterInput.value.toLocaleLowerCase('tr-TR');
+            const filterText = normalizeSearchText(filterInput.value);
             const selectedGenre = genreFilter.value;
             const filteredMovies = watchedMoviesList.filter(movie => {
-                const titleMatch = movie.title.toLocaleLowerCase('tr-TR').includes(filterText);
-                const directorMatch = movie.director ? movie.director.toLocaleLowerCase('tr-TR').includes(filterText) : false;
-                const castMatch = movie.cast ? movie.cast.some(actor => actor.toLocaleLowerCase('tr-TR').includes(filterText)) : false;
+                const titleMatch = normalizeSearchText(movie.title).includes(filterText);
+                const directorMatch = movie.director ? normalizeSearchText(movie.director).includes(filterText) : false;
+                const castMatch = movie.cast ? movie.cast.some(actor => normalizeSearchText(actor).includes(filterText)) : false;
                 const genreMatch = !selectedGenre || (movie.genres && movie.genres.includes(selectedGenre));
                 return (titleMatch || directorMatch || castMatch) && genreMatch;
             });
@@ -1168,11 +1199,11 @@
         }
         
         function filterAndDisplayDvds() {
-            const filterText = dvdFilterInput.value.toLocaleLowerCase('tr-TR');
+            const filterText = normalizeSearchText(dvdFilterInput.value);
             const filteredDvds = dvdCollectionList.filter(dvd => {
-                const titleMatch = dvd.title.toLocaleLowerCase('tr-TR').includes(filterText);
-                const directorMatch = dvd.director ? dvd.director.toLocaleLowerCase('tr-TR').includes(filterText) : false;
-                const castMatch = dvd.cast ? dvd.cast.some(actor => actor.toLocaleLowerCase('tr-TR').includes(filterText)) : false;
+                const titleMatch = normalizeSearchText(dvd.title).includes(filterText);
+                const directorMatch = dvd.director ? normalizeSearchText(dvd.director).includes(filterText) : false;
+                const castMatch = dvd.cast ? dvd.cast.some(actor => normalizeSearchText(actor).includes(filterText)) : false;
                 return titleMatch || directorMatch || castMatch;
             });
             dvdListContainer.innerHTML = '';
