@@ -192,7 +192,7 @@
             </div>
         </div>
 
-        <!-- STREAMING_CHUNK:Rendering Watchlist section... -->
+        <!-- STREAMING_CHUNK:Rendering Watchlist section with random button... -->
         <div id="watchlistContent" class="hidden">
             <div class="mb-8 p-6 bg-gray-950 border border-gray-800 rounded-xl shadow-lg">
                 <h2 class="text-2xl font-bold mb-4 text-white">İzleme Listesine Film Ekle</h2>
@@ -216,7 +216,25 @@
                 <div id="watchlistSearchResults" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8"></div>
             </div>
             <div>
-                <h2 class="text-3xl font-bold text-white mb-4">İzleme Listem (<span id="watchlistCount">0</span>)</h2>
+                <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4 border-b border-gray-800 pb-4 mt-8">
+                    <h2 class="text-3xl font-bold text-white">İzleme Listem (<span id="watchlistCount">0</span>)</h2>
+                    <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                        <!-- RANDOM SELECTION BUTTON -->
+                        <button id="randomWatchlistBtn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                              <path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4zm1 14a1 1 0 100-2 1 1 0 000 2zm5-1.757l4.9-4.9a2 2 0 000-2.828L13.485 5.1a2 2 0 00-2.828 0L10 5.757v8.486zM16 18H9.071l6-6H16a2 2 0 012 2v2a2 2 0 01-2 2z" clip-rule="evenodd" />
+                            </svg>
+                            Ne İzlesem?
+                        </button>
+                        <!-- FILTER INPUT FOR WATCHLIST -->
+                        <div class="relative w-full sm:w-64">
+                            <input type="text" id="watchlistFilterInput" class="w-full px-4 py-2 bg-black border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 text-white placeholder-gray-500 pr-10" placeholder="Listede ara...">
+                            <button type="button" id="clearWatchlistFilterInput" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-white hidden">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
                 <div id="watchlistContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
                 <div id="watchlist-loader" class="text-center mt-8 hidden"><p class="text-yellow-400">İzleme listeniz yükleniyor...</p></div>
             </div>
@@ -496,6 +514,9 @@
         const closeWatchlistSearchResultsBtn = document.getElementById('closeWatchlistSearchResultsBtn');
         const watchlistContainer = document.getElementById('watchlistContainer');
         const watchlistCount = document.getElementById('watchlistCount');
+        const watchlistFilterInput = document.getElementById('watchlistFilterInput');
+        const clearWatchlistFilterInput = document.getElementById('clearWatchlistFilterInput');
+        const randomWatchlistBtn = document.getElementById('randomWatchlistBtn');
         const exportBtn = document.getElementById('exportBtn');
         const exportDvdBtn = document.getElementById('exportDvdBtn');
         const bulkAddBtn = document.getElementById('bulkAddBtn');
@@ -649,7 +670,7 @@
                 watchlistMovies = [];
                 snapshot.forEach(doc => watchlistMovies.push({ id: doc.id, ...doc.data() }));
                 watchlistCount.textContent = watchlistMovies.length;
-                displayWatchlist();
+                filterAndDisplayWatchlist();
                 if(snapshot.empty) { watchlistContainer.innerHTML = `<p class="col-span-full text-center text-gray-500">İzleme listeniz boş.</p>`; }
             }, (error) => { console.error("Error listening to watchlist collection:", error); });
         }
@@ -1055,19 +1076,30 @@
             }
         }
 
-        function displayWatchlist() {
+        function filterAndDisplayWatchlist() {
+            const filterText = normalizeSearchText(watchlistFilterInput.value);
+            const filteredWatchlist = watchlistMovies.filter(movie => {
+                const titleMatch = normalizeSearchText(movie.title).includes(filterText);
+                return titleMatch;
+            });
+            
             watchlistContainer.innerHTML = '';
-            if (watchlistMovies.length === 0) {
-                watchlistContainer.innerHTML = `<p class="col-span-full text-center text-gray-500">İzleme listeniz boş.</p>`;
+            if (filteredWatchlist.length === 0) {
+                if (watchlistMovies.length > 0) {
+                    watchlistContainer.innerHTML = `<p class="col-span-full text-center text-gray-500">Arama kriterlerinize uygun film bulunamadı.</p>`;
+                } else {
+                    watchlistContainer.innerHTML = `<p class="col-span-full text-center text-gray-500">İzleme listeniz boş.</p>`;
+                }
                 return;
             }
-            watchlistMovies.sort((a,b) => getSortableDate(b.addedAt) - getSortableDate(a.addedAt)).forEach(movie => {
+            
+            filteredWatchlist.sort((a,b) => getSortableDate(b.addedAt) - getSortableDate(a.addedAt)).forEach(movie => {
                 const posterPath = movie.posterPath ? `https://image.tmdb.org/t/p/w500${movie.posterPath}` : 'https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';
                 const movieElement = document.createElement('div');
-                movieElement.className = 'relative group rounded-lg overflow-hidden border border-gray-800';
+                movieElement.className = 'relative group rounded-lg overflow-hidden border border-gray-800 shadow-lg';
                 let addedAtStr = formatDate(movie.addedAt);
                 movieElement.innerHTML = `
-                    <img src="${posterPath}" alt="${movie.title}" class="w-full h-full object-cover rounded-lg shadow-lg" loading="lazy">
+                    <img src="${posterPath}" alt="${movie.title}" class="w-full h-full object-cover rounded-lg" loading="lazy">
                     <div class="absolute inset-0 bg-black/85 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2 rounded-lg text-center">
                         <p class="text-white font-bold text-sm">${movie.title}</p>
                         ${addedAtStr ? `<p class="text-gray-400 text-xs mt-1">${addedAtStr}</p>` : ''}
@@ -1600,11 +1632,27 @@
         });
         filterInput.addEventListener('input', filterAndDisplayWatchedMovies);
         dvdFilterInput.addEventListener('input', filterAndDisplayDvds);
+        watchlistFilterInput.addEventListener('input', filterAndDisplayWatchlist); // ADDED
         genreFilter.addEventListener('change', filterAndDisplayWatchedMovies);
         exportBtn.addEventListener('click', exportToCSV);
         exportDvdBtn.addEventListener('click', exportDvdToCSV);
         bulkAddBtn.addEventListener('click', handleBulkAdd);
         
+        // RANDOM SELECTION
+        randomWatchlistBtn.addEventListener('click', async () => {
+            if (watchlistMovies.length === 0) {
+                showNotification("İzleme listeniz boş! Önce film ekleyin.", true);
+                return;
+            }
+            const randomIndex = Math.floor(Math.random() * watchlistMovies.length);
+            const randomMovie = watchlistMovies[randomIndex];
+            
+            // Show modal with the selected movie
+            const movieDetails = await getMovieDetails(randomMovie.tmdbId);
+            showMovieInfoModal(movieDetails || randomMovie);
+            showNotification("Sizin için harika bir film seçtik! 🍿", false);
+        });
+
         updateAllBtn.addEventListener('click', async () => {
             updateAllStatus.textContent = 'Güncelleme başladı...';
             for(let i = 0; i < watchedMoviesList.length; i++) {
@@ -1656,6 +1704,7 @@
         setupClearButton(dvdSearchInput, clearDvdSearchInput);
         setupClearButton(dvdFilterInput, clearDvdFilterInput, filterAndDisplayDvds);
         setupClearButton(watchlistSearchInput, clearWatchlistSearchInput);
+        setupClearButton(watchlistFilterInput, clearWatchlistFilterInput, filterAndDisplayWatchlist); // ADDED
 
         closeSearchResultsBtn.addEventListener('click', () => searchResultsWrapper.classList.add('hidden'));
         closeDvdSearchResultsBtn.addEventListener('click', () => dvdSearchResultsWrapper.classList.add('hidden'));
