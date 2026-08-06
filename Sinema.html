@@ -412,7 +412,7 @@
 
     setLogLevel('debug');
 
-    /* STREAMING_CHUNK:Defining corrected normalization helper without string duplication... */
+    /* STREAMING_CHUNK:Defining corrected normalization helper... */
     function isNonLatin(str) {
         if (!str) return false;
         return /[^\u0000-\u024F\u1E00-\u1EFF\s\d.,'":;\-–—()]/u.test(str);
@@ -1076,6 +1076,7 @@
             }
         }
 
+        /* STREAMING_CHUNK:Filtering and rendering watchlist... */
         function filterAndDisplayWatchlist() {
             const filterText = normalizeSearchText(watchlistFilterInput.value);
             const filteredWatchlist = watchlistMovies.filter(movie => {
@@ -1314,7 +1315,7 @@
             Array.from(allGenres).sort().forEach(genre => { const option = document.createElement('option'); option.value = genre; option.textContent = genre; genreFilter.appendChild(option); });
         }
 
-        /* STREAMING_CHUNK:Filtering watched movies within the application using clean strings... */
+        /* STREAMING_CHUNK:Filtering watched movies within the application... */
         function filterAndDisplayWatchedMovies() {
             const filterText = normalizeSearchText(filterInput.value);
             const selectedGenre = genreFilter.value;
@@ -1632,13 +1633,12 @@
         });
         filterInput.addEventListener('input', filterAndDisplayWatchedMovies);
         dvdFilterInput.addEventListener('input', filterAndDisplayDvds);
-        watchlistFilterInput.addEventListener('input', filterAndDisplayWatchlist); // ADDED
+        watchlistFilterInput.addEventListener('input', filterAndDisplayWatchlist);
         genreFilter.addEventListener('change', filterAndDisplayWatchedMovies);
         exportBtn.addEventListener('click', exportToCSV);
         exportDvdBtn.addEventListener('click', exportDvdToCSV);
         bulkAddBtn.addEventListener('click', handleBulkAdd);
         
-        // RANDOM SELECTION
         randomWatchlistBtn.addEventListener('click', async () => {
             if (watchlistMovies.length === 0) {
                 showNotification("İzleme listeniz boş! Önce film ekleyin.", true);
@@ -1647,7 +1647,6 @@
             const randomIndex = Math.floor(Math.random() * watchlistMovies.length);
             const randomMovie = watchlistMovies[randomIndex];
             
-            // Show modal with the selected movie
             const movieDetails = await getMovieDetails(randomMovie.tmdbId);
             showMovieInfoModal(movieDetails || randomMovie);
             showNotification("Sizin için harika bir film seçtik! 🍿", false);
@@ -1704,7 +1703,7 @@
         setupClearButton(dvdSearchInput, clearDvdSearchInput);
         setupClearButton(dvdFilterInput, clearDvdFilterInput, filterAndDisplayDvds);
         setupClearButton(watchlistSearchInput, clearWatchlistSearchInput);
-        setupClearButton(watchlistFilterInput, clearWatchlistFilterInput, filterAndDisplayWatchlist); // ADDED
+        setupClearButton(watchlistFilterInput, clearWatchlistFilterInput, filterAndDisplayWatchlist);
 
         closeSearchResultsBtn.addEventListener('click', () => searchResultsWrapper.classList.add('hidden'));
         closeDvdSearchResultsBtn.addEventListener('click', () => dvdSearchResultsWrapper.classList.add('hidden'));
