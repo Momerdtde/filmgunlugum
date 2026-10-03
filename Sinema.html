@@ -4,12 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Film Günlüğüm</title>
-    <!-- Tailwind CSS ve Google Fonts -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- CSS Stilleri -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -17,7 +19,7 @@
             color: #d1d5db;
         }
         .tab-btn.active {
-            background-color: #eab308;
+            background-color: #eab308; /* yellow-500 */
             color: #000000;
         }
         .tab-btn {
@@ -68,9 +70,13 @@
         .modal-backdrop {
             background-color: rgba(0, 0, 0, 0.85);
         }
+        .neon-quote {
+            color: #f472b6;
+            text-shadow: 0 0 5px #f472b6, 0 0 10px #ec4899, 0 0 15px #db2777;
+        }
     </style>
 </head>
-<body class="bg-black text-gray-300 antialiased">
+<body>
 
 <!-- Yükleme Ekranı -->
 <div id="loadingOverlay" class="fixed inset-0 w-full h-full bg-black flex items-center justify-center z-50">
@@ -125,6 +131,17 @@
         <div class="cinema-title-container">
             <h1 id="appTitle" class="text-5xl md:text-6xl cinema-title" data-text="Film Günlüğüm">Film Günlüğüm</h1>
         </div>
+
+        <!-- YUSUF ATILGAN ALINTISI -->
+        <div class="max-w-3xl mx-auto mt-8 mb-4 px-4">
+            <p class="italic neon-quote text-sm md:text-base leading-relaxed tracking-wide">
+                “Çağımızda geçmiş yüzyılların bilmediği, kısa ömürlü bir yaratık yaşıyor. Sinemadan çıkmış insan. Gördüğü film ona bir şeyler yapmış. Salt çıkarını düşünen kişi değil. İnsanlarla barışık. Onun büyük işler yapacağı umulur. Ama beş-on dakikada ölüyor. Sokak sinemadan çıkmayanlarla dolu; asık yüzleri, kayıtsızlıkları, sinsi yürüyüşleriyle onu aralarına alıyorlar, eritiyorlar.”
+            </p>
+            <p class="neon-quote text-xs md:text-sm mt-3 text-right font-semibold">
+                ― Yusuf Atılgan, Aylak Adam
+            </p>
+        </div>
+
         <div class="mt-4 flex justify-center items-center gap-4">
             <div>
                 <p id="userEmailDisplay" class="text-gray-400"></p>
@@ -229,6 +246,7 @@
                     <h2 class="text-3xl font-bold text-white">İzleme Listem (<span id="watchlistCount">0</span>)</h2>
                     
                     <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                        <!-- NE İZLESEM BUTONU -->
                         <button id="randomWatchlistBtn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                               <path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4zm1 14a1 1 0 100-2 1 1 0 000 2zm5-1.757l4.9-4.9a2 2 0 000-2.828L13.485 5.1a2 2 0 00-2.828 0L10 5.757v8.486zM16 18H9.071l6-6H16a2 2 0 012 2v2a2 2 0 01-2 2z" clip-rule="evenodd" />
@@ -236,8 +254,9 @@
                             Ne İzlesem?
                         </button>
                         
+                        <!-- İZLEME LİSTESİ FİLTRELEME -->
                         <div class="relative w-full sm:w-64">
-                            <input type="text" id="watchlistFilterInput" class="w-full px-4 py-2 bg-black border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 text-white placeholder-gray-500 pr-10" placeholder="Listede ara (yönetmen, oyuncu)...">
+                            <input type="text" id="watchlistFilterInput" class="w-full px-4 py-2 bg-black border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 text-white placeholder-gray-500 pr-10" placeholder="Listede ara (yönetmen, oyuncu, tür)...">
                             <button type="button" id="clearWatchlistFilterInput" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-white hidden">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                             </button>
@@ -322,15 +341,10 @@
             </div>
             <div id="dataManagementSection" class="p-6 bg-gray-950 border border-gray-800 rounded-xl shadow-lg">
                 <h2 class="text-2xl font-bold mb-4 text-white">Veri Yönetimi</h2>
-                <button id="updateAllBtn" class="w-full bg-gray-800 hover:bg-gray-700 text-yellow-400 font-bold py-3 px-6 rounded-lg mb-4 border border-gray-700 transition-colors">İzlediklerim Listesini Güncelle (Yönetmen & Oyuncuları Ekle)</button>
+                <button id="updateAllBtn" class="w-full bg-gray-800 hover:bg-gray-700 text-yellow-400 font-bold py-3 px-6 rounded-lg mb-4 border border-gray-700 transition-colors">İzlediklerim Listesini Güncelle</button>
                 <div id="updateAllStatus" class="text-center text-sm text-gray-400 mb-4"></div>
-                
-                <button id="updateAllWatchlistBtn" class="w-full bg-gray-800 hover:bg-gray-700 text-yellow-400 font-bold py-3 px-6 rounded-lg mb-4 border border-gray-700 transition-colors">İzleme Listesini Güncelle (Yönetmen & Oyuncuları Ekle)</button>
-                <div id="updateAllWatchlistStatus" class="text-center text-sm text-gray-400 mb-4"></div>
-
-                <button id="updateAllDvdBtn" class="w-full bg-gray-800 hover:bg-gray-700 text-yellow-400 font-bold py-3 px-6 rounded-lg mb-4 border border-gray-700 transition-colors">Koleksiyon Listesini Güncelle (Yönetmen & Oyuncuları Ekle)</button>
+                <button id="updateAllDvdBtn" class="w-full bg-gray-800 hover:bg-gray-700 text-yellow-400 font-bold py-3 px-6 rounded-lg mb-4 border border-gray-700 transition-colors">Koleksiyon Listesini Güncelle</button>
                 <div id="updateAllDvdStatus" class="text-center text-sm text-gray-400 mb-4"></div>
-                
                 <button id="exportBtn" class="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3 px-6 rounded-lg transition-colors">İzlediklerimi Dışa Aktar (CSV)</button>
                 <button id="exportDvdBtn" class="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3 px-6 rounded-lg mt-4 transition-colors">Koleksiyonu Dışa Aktar (CSV)</button>
             </div>
@@ -443,15 +457,6 @@
             .trim();
     }
 
-    // Hem dizi (Array) hem düz metin (String) olan alanlarda güvenli arama yapmamızı sağlayan yardımcı
-    function matchField(item, filterText) {
-        if (!item) return false;
-        if (Array.isArray(item)) {
-            return item.some(val => normalizeSearchText(String(val)).includes(filterText));
-        }
-        return normalizeSearchText(String(item)).includes(filterText);
-    }
-
     function getProcessedPersonName(trPerson, enPerson) {
         if (!trPerson && !enPerson) return '';
         const trName = trPerson ? trPerson.name : '';
@@ -546,8 +551,6 @@
         const bulkAddStatus = document.getElementById('bulkAddStatus');
         const updateAllBtn = document.getElementById('updateAllBtn');
         const updateAllStatus = document.getElementById('updateAllStatus');
-        const updateAllWatchlistBtn = document.getElementById('updateAllWatchlistBtn');
-        const updateAllWatchlistStatus = document.getElementById('updateAllWatchlistStatus');
         const updateAllDvdBtn = document.getElementById('updateAllDvdBtn');
         const updateAllDvdStatus = document.getElementById('updateAllDvdStatus');
         
@@ -1095,10 +1098,11 @@
         function filterAndDisplayWatchlist() {
             const filterText = normalizeSearchText(watchlistFilterInput.value);
             const filteredWatchlist = watchlistMovies.filter(movie => {
-                const titleMatch = matchField(movie.title, filterText);
-                const directorMatch = matchField(movie.director, filterText);
-                const castMatch = matchField(movie.cast, filterText);
-                const genreMatch = matchField(movie.genres, filterText);
+                const titleMatch = normalizeSearchText(movie.title).includes(filterText);
+                const directorMatch = movie.director ? normalizeSearchText(movie.director).includes(filterText) : false;
+                const castMatch = movie.cast ? movie.cast.some(actor => normalizeSearchText(actor).includes(filterText)) : false;
+                const genreMatch = movie.genres ? movie.genres.some(genre => normalizeSearchText(genre).includes(filterText)) : false;
+
                 return titleMatch || directorMatch || castMatch || genreMatch;
             });
             
@@ -1140,6 +1144,7 @@
             });
         }
 
+        // İZLEME LİSTESİNE EKLERKEN DETAYLARI ÇEKME
         async function addMovieToWatchlist(movieData) {
             if (!userId) return { status: 'error' };
             const watchlistCollection = collection(db, 'artifacts', appId, 'users', userId, 'watchlist');
@@ -1147,12 +1152,15 @@
             const querySnapshot = await getDocs(q);
             if (!querySnapshot.empty) { return { status: 'duplicate' }; }
 
+            // Detayları çekerek (Yönetmen, Oyuncu, Tür) veritabanına ekliyoruz
             const details = await getMovieDetails(movieData.tmdbId);
             if (details) {
                 movieData.genres = details.genres ? details.genres.map(g => g.name) : [];
+                
                 if (isNonLatin(movieData.title) && details.getEnTitle && !isNonLatin(details.getEnTitle)) {
                     movieData.title = `${details.getEnTitle} (${movieData.title})`;
                 }
+
                 const trCrew = details.credits ? details.credits.crew || [] : [];
                 const enCrew = details.getEnCredits ? details.getEnCredits.crew || [] : [];
                 const trCast = details.credits ? details.credits.cast || [] : [];
@@ -1288,52 +1296,6 @@
             }
         }
 
-        async function handleUpdateWatchlistDetails(docId, tmdbId) {
-            if (!userId) return false;
-            const details = await getMovieDetails(tmdbId);
-            if (!details) return false;
-
-            const docRef = doc(db, 'artifacts', appId, 'users', userId, 'watchlist', docId);
-            const updateData = {};
-            
-            updateData.genres = details.genres ? details.genres.map(g => g.name) : [];
-            if (details.title) {
-                let titleStr = details.title;
-                if (isNonLatin(titleStr) && details.getEnTitle && !isNonLatin(details.getEnTitle)) {
-                    titleStr = `${details.getEnTitle} (${titleStr})`;
-                }
-                updateData.title = titleStr;
-            }
-
-            const trCrew = details.credits ? details.credits.crew || [] : [];
-            const enCrew = details.getEnCredits ? details.getEnCredits.crew || [] : [];
-            const trCast = details.credits ? details.credits.cast || [] : [];
-            const enCast = details.getEnCredits ? details.getEnCredits.cast || [] : [];
-
-            const getRole = (job) => {
-                const trObj = trCrew.find(p => p.job === job);
-                const enObj = enCrew.find(p => p.job === job);
-                return getProcessedPersonName(trObj, enObj);
-            };
-            updateData.director = getRole('Director');
-
-            const topCast = [];
-            const maxCast = Math.max(trCast.length, enCast.length);
-            for (let i = 0; i < Math.min(3, maxCast); i++) {
-                const actorName = getProcessedPersonName(trCast[i], enCast[i]);
-                if (actorName) topCast.push(actorName);
-            }
-            updateData.cast = topCast;
-
-            try {
-                await updateDoc(docRef, updateData);
-                return true;
-            } catch (error) {
-                console.error("Error updating watchlist details:", error);
-                return false;
-            }
-        }
-
         async function handleUpdateDvdDetails(docId, tmdbId) {
             if (!userId) return;
             
@@ -1411,9 +1373,9 @@
             const filterText = normalizeSearchText(filterInput.value);
             const selectedGenre = genreFilter.value;
             const filteredMovies = watchedMoviesList.filter(movie => {
-                const titleMatch = matchField(movie.title, filterText);
-                const directorMatch = matchField(movie.director, filterText);
-                const castMatch = matchField(movie.cast, filterText);
+                const titleMatch = normalizeSearchText(movie.title).includes(filterText);
+                const directorMatch = movie.director ? normalizeSearchText(movie.director).includes(filterText) : false;
+                const castMatch = movie.cast ? movie.cast.some(actor => normalizeSearchText(actor).includes(filterText)) : false;
                 const genreMatch = !selectedGenre || (movie.genres && movie.genres.includes(selectedGenre));
                 return (titleMatch || directorMatch || castMatch) && genreMatch;
             });
@@ -1425,9 +1387,9 @@
         function filterAndDisplayDvds() {
             const filterText = normalizeSearchText(dvdFilterInput.value);
             const filteredDvds = dvdCollectionList.filter(dvd => {
-                const titleMatch = matchField(dvd.title, filterText);
-                const directorMatch = matchField(dvd.director, filterText);
-                const castMatch = matchField(dvd.cast, filterText);
+                const titleMatch = normalizeSearchText(dvd.title).includes(filterText);
+                const directorMatch = dvd.director ? normalizeSearchText(dvd.director).includes(filterText) : false;
+                const castMatch = dvd.cast ? dvd.cast.some(actor => normalizeSearchText(actor).includes(filterText)) : false;
                 return titleMatch || directorMatch || castMatch;
             });
             dvdListContainer.innerHTML = '';
@@ -1730,6 +1692,7 @@
         exportDvdBtn.addEventListener('click', exportDvdToCSV);
         bulkAddBtn.addEventListener('click', handleBulkAdd);
         
+        // NE İZLESEM BUTONU İŞLEVİ
         randomWatchlistBtn.addEventListener('click', async () => {
             if (watchlistMovies.length === 0) {
                 showNotification("İzleme listeniz boş! Önce film ekleyin.", true);
@@ -1752,19 +1715,6 @@
                 await new Promise(resolve => setTimeout(resolve, 250));
             }
             updateAllStatus.textContent = 'Tüm filmler güncellendi!';
-        });
-
-        updateAllWatchlistBtn.addEventListener('click', async () => {
-            updateAllWatchlistStatus.textContent = 'İzleme listesi güncelleniyor...';
-            let successCount = 0;
-            for(let i = 0; i < watchlistMovies.length; i++) {
-                const movie = watchlistMovies[i];
-                updateAllWatchlistStatus.textContent = `${i+1}/${watchlistMovies.length} güncelleniyor: ${movie.title}`;
-                const success = await handleUpdateWatchlistDetails(movie.id, movie.tmdbId);
-                if (success) successCount++;
-                await new Promise(resolve => setTimeout(resolve, 250));
-            }
-            updateAllWatchlistStatus.textContent = `İzleme listesi güncellendi! (${successCount} başarılı)`;
         });
 
         updateAllDvdBtn.addEventListener('click', async () => {
@@ -1999,7 +1949,7 @@
             }
         });
 
-        // UTILS
+        // YARDIMCI FONKSİYONLAR (UTILS)
         function showNotification(message, isError = false) {
             const notification = document.getElementById('notification');
             const messageElement = document.getElementById('notification-message');
