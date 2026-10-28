@@ -202,7 +202,7 @@
                 </div>
                 <div class="flex flex-col md:flex-row gap-4 mb-6">
                     <div class="relative w-full md:w-2/3">
-                        <input type="text" id="filterInput" class="w-full px-4 py-2 bg-black border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 text-white placeholder-gray-500 pr-10" placeholder="Listemde başlık, yönetmen, oyuncu veya tür ara...">
+                        <input type="text" id="filterInput" class="w-full px-4 py-2 bg-black border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 text-white placeholder-gray-500 pr-10" placeholder="Listemde başlık, yönetmen, oyuncu, tür veya dönem (örn: 1990'lar) ara...">
                         <button type="button" id="clearFilterInput" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-white hidden">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                         </button>
@@ -491,6 +491,22 @@
             .replace(/[\u0300-\u036f]/g, "")
             .toLowerCase()
             .trim();
+    }
+
+    // YENİ: Türkçe Ses Uyumuyla Onyıl Formatlayıcı (1990'lar, 2000'ler, 1960'lar vb.)
+    function getDecadeStrings(yearStr) {
+        if (!yearStr || yearStr === 'N/A' || isNaN(yearStr)) return null;
+        const d = Math.floor(parseInt(yearStr) / 10) * 10;
+        const lastTwo = d % 100;
+        const suffix = (lastTwo === 40 || lastTwo === 60 || lastTwo === 90 || (lastTwo === 0 && d !== 2000)) ? "'lar" : "'ler";
+        return {
+            display: d + suffix,
+            base: d.toString(),
+            alt1: d + "'ler",
+            alt2: d + "'lar",
+            alt3: d + "ler",
+            alt4: d + "lar"
+        };
     }
 
     function getProcessedPersonName(trPerson, enPerson) {
@@ -1029,7 +1045,7 @@
             }
         }
 
-        // DVD FONKSİYONLARI (Eksik olan ve hataya sebep olan kısımlar eklendi)
+        // DVD FONKSİYONLARI
         function displayDvd(dvd) {
             const posterPath = dvd.posterPath ? `https://image.tmdb.org/t/p/w500${dvd.posterPath}` : 'https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';
             const dvdElement = document.createElement('div');
@@ -1413,6 +1429,7 @@
             Array.from(allGenres).sort().forEach(genre => { const option = document.createElement('option'); option.value = genre; option.textContent = genre; genreFilter.appendChild(option); });
         }
 
+        // GÜNCELLENDİ: Dönemleri (1990'lar vb.) ve Yılları da filtreler
         function filterAndDisplayWatchedMovies() {
             const filterText = normalizeSearchText(filterInput.value);
             const selectedGenre = genreFilter.value;
@@ -1422,7 +1439,25 @@
                 const castMatch = movie.cast ? movie.cast.some(actor => normalizeSearchText(actor).includes(filterText)) : false;
                 const genreTextMatch = movie.genres ? movie.genres.some(genre => normalizeSearchText(genre).includes(filterText)) : false;
                 
-                const matchesText = titleMatch || directorMatch || castMatch || genreTextMatch;
+                // Yıl ve Onyıl (Dönem) eşleşmesi
+                let yearOrDecadeMatch = false;
+                if (movie.releaseYear && movie.releaseYear !== 'N/A') {
+                    const yStr = String(movie.releaseYear);
+                    const dec = getDecadeStrings(yStr);
+                    if (yStr.includes(filterText)) {
+                        yearOrDecadeMatch = true;
+                    } else if (dec) {
+                        if (normalizeSearchText(dec.display).includes(filterText) ||
+                            normalizeSearchText(dec.alt1).includes(filterText) ||
+                            normalizeSearchText(dec.alt2).includes(filterText) ||
+                            normalizeSearchText(dec.alt3).includes(filterText) ||
+                            normalizeSearchText(dec.alt4).includes(filterText)) {
+                            yearOrDecadeMatch = true;
+                        }
+                    }
+                }
+                
+                const matchesText = titleMatch || directorMatch || castMatch || genreTextMatch || yearOrDecadeMatch;
                 const matchesDropdown = !selectedGenre || (movie.genres && movie.genres.includes(selectedGenre));
                 
                 return matchesText && matchesDropdown;
@@ -1616,7 +1651,7 @@
             });
         }
         
-        // YENİLENEN ANALİZ BÖLÜMÜ
+        // ANALİZ BÖLÜMÜ (DÖNEMLER ARTIK TIKLANABİLİR)
         function generateAnalysis() {
             const directorCounts = {};
             const actorCounts = {};
@@ -1638,8 +1673,10 @@
                     });
                 }
                 if (movie.releaseYear && movie.releaseYear !== 'N/A' && !isNaN(movie.releaseYear)) {
-                    const decade = Math.floor(parseInt(movie.releaseYear) / 10) * 10 + "'ler";
-                    decadeCounts[decade] = (decadeCounts[decade] || 0) + 1;
+                    const dec = getDecadeStrings(movie.releaseYear);
+                    if (dec) {
+                        decadeCounts[dec.display] = (decadeCounts[dec.display] || 0) + 1;
+                    }
                 }
             });
 
@@ -1650,7 +1687,7 @@
             renderAnalysisList(directorAnalysisList, directorCounts, 'film', true);
             renderAnalysisList(actorAnalysisList, actorCounts, 'film', true);
             renderAnalysisList(genreAnalysisList, genreCounts, 'film', true);
-            renderAnalysisList(decadeAnalysisList, decadeCounts, 'film', false);
+            renderAnalysisList(decadeAnalysisList, decadeCounts, 'film', true); // true yapıldı, artık tıklanabilir!
         }
 
         function renderAnalysisList(element, data, unit, isClickable = true) {
@@ -1665,9 +1702,9 @@
                 li.className = "flex justify-between items-center bg-gray-900/50 border border-gray-800 p-2 rounded-lg hover:bg-gray-800 transition-colors";
                 
                 if (isClickable) {
-                    li.innerHTML = `<button class="text-left hover:text-yellow-400 text-gray-300 text-sm font-medium transition-colors analysis-item truncate pr-2" data-name="${name}" title="${name}">${name}</button><span class="font-bold text-yellow-500 bg-black px-2 py-0.5 rounded text-xs">${count}</span>`;
+                    li.innerHTML = `<button class="text-left hover:text-yellow-400 text-gray-300 text-sm font-medium transition-colors analysis-item truncate pr-2 w-full" data-name="${name}" title="${name}">${name}</button><span class="font-bold text-yellow-500 bg-black px-2 py-0.5 rounded text-xs flex-shrink-0">${count}</span>`;
                 } else {
-                    li.innerHTML = `<span class="text-left text-gray-300 text-sm font-medium truncate pr-2" title="${name}">${name}</span><span class="font-bold text-yellow-500 bg-black px-2 py-0.5 rounded text-xs">${count}</span>`;
+                    li.innerHTML = `<span class="text-left text-gray-300 text-sm font-medium truncate pr-2" title="${name}">${name}</span><span class="font-bold text-yellow-500 bg-black px-2 py-0.5 rounded text-xs flex-shrink-0">${count}</span>`;
                 }
                 element.appendChild(li);
             });
@@ -2105,6 +2142,8 @@
             if (analysisItem) {
                 const name = analysisItem.dataset.name;
                 showTab(mainContent, mainTabBtn);
+                // Tür filtresini sıfırla ki çakışma olmasın
+                genreFilter.value = "";
                 filterInput.value = name;
                 filterInput.dispatchEvent(new Event('input', { bubbles: true }));
                 filterInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
