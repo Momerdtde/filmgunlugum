@@ -126,7 +126,7 @@
 </div>
 
 <!-- Ana Uygulama -->
-<div id="appContainer" class="container mx-auto p-4 md:p-8 max-w-4xl mb-24 hidden">
+<div id="appContainer" class="container mx-auto p-4 md:p-8 max-w-6xl mb-24 hidden">
     <header class="text-center mb-8">
         <div class="cinema-title-container">
             <h1 id="appTitle" class="text-5xl md:text-6xl cinema-title" data-text="Film Günlüğüm">Film Günlüğüm</h1>
@@ -305,17 +305,54 @@
             </div>
         </div>
 
-        <!-- ANALİZ (ANALYSIS) -->
+        <!-- ANALİZ (ANALYSIS) - YENİLENEN DERİNLEMESİNE BÖLÜM -->
         <div id="analysisContent" class="hidden">
             <h2 class="text-3xl font-bold text-white mb-6 border-b border-gray-800 pb-4">İzleme Analizi</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                    <h3 class="text-2xl font-bold mb-4 text-white">Favori Yönetmenler</h3>
-                    <ul id="directorAnalysis" class="space-y-2 text-gray-300"></ul>
+            
+            <!-- Özet İstatistik Kartları -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-gradient-to-br from-gray-900 to-black border border-gray-800 p-6 rounded-2xl shadow-xl flex flex-col items-center justify-center relative overflow-hidden">
+                    <div class="absolute -right-4 -top-4 opacity-10"><svg class="w-24 h-24 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"></path></svg></div>
+                    <span class="text-gray-400 text-sm font-semibold uppercase tracking-wider mb-2 z-10">İzlenen Film</span>
+                    <span id="statTotalMovies" class="text-5xl font-bold text-yellow-500 z-10">0</span>
                 </div>
-                <div>
-                    <h3 class="text-2xl font-bold mb-4 text-white">Favori Oyuncular</h3>
-                    <ul id="actorAnalysis" class="space-y-2 text-gray-300"></ul>
+                <div class="bg-gradient-to-br from-gray-900 to-black border border-gray-800 p-6 rounded-2xl shadow-xl flex flex-col items-center justify-center relative overflow-hidden">
+                    <div class="absolute -right-4 -top-4 opacity-10"><svg class="w-24 h-24 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path></svg></div>
+                    <span class="text-gray-400 text-sm font-semibold uppercase tracking-wider mb-2 z-10">Keşfedilen Yönetmen</span>
+                    <span id="statUniqueDirectors" class="text-5xl font-bold text-blue-400 z-10">0</span>
+                </div>
+                <div class="bg-gradient-to-br from-gray-900 to-black border border-gray-800 p-6 rounded-2xl shadow-xl flex flex-col items-center justify-center relative overflow-hidden">
+                    <div class="absolute -right-4 -top-4 opacity-10"><svg class="w-24 h-24 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path></svg></div>
+                    <span class="text-gray-400 text-sm font-semibold uppercase tracking-wider mb-2 z-10">Farklı Oyuncu</span>
+                    <span id="statUniqueActors" class="text-5xl font-bold text-green-400 z-10">0</span>
+                </div>
+            </div>
+
+            <!-- Detaylı Listeler -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                <div class="bg-gray-950 border border-gray-800 p-5 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4 text-white border-b border-gray-800 pb-2 flex items-center justify-between">
+                        Favori Türler <span class="text-xs font-normal text-gray-500 bg-gray-900 px-2 py-1 rounded">Top 10</span>
+                    </h3>
+                    <ul id="genreAnalysis" class="space-y-2"></ul>
+                </div>
+                <div class="bg-gray-950 border border-gray-800 p-5 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4 text-white border-b border-gray-800 pb-2 flex items-center justify-between">
+                        Favori Yönetmenler <span class="text-xs font-normal text-gray-500 bg-gray-900 px-2 py-1 rounded">Top 10</span>
+                    </h3>
+                    <ul id="directorAnalysis" class="space-y-2"></ul>
+                </div>
+                <div class="bg-gray-950 border border-gray-800 p-5 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4 text-white border-b border-gray-800 pb-2 flex items-center justify-between">
+                        Favori Oyuncular <span class="text-xs font-normal text-gray-500 bg-gray-900 px-2 py-1 rounded">Top 10</span>
+                    </h3>
+                    <ul id="actorAnalysis" class="space-y-2"></ul>
+                </div>
+                <div class="bg-gray-950 border border-gray-800 p-5 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4 text-white border-b border-gray-800 pb-2 flex items-center justify-between">
+                        Sinema Dönemleri <span class="text-xs font-normal text-gray-500 bg-gray-900 px-2 py-1 rounded">Onyıllar</span>
+                    </h3>
+                    <ul id="decadeAnalysis" class="space-y-2"></ul>
                 </div>
             </div>
         </div>
@@ -564,6 +601,8 @@
         const movieInfoModalContent = document.getElementById('movieInfoModalContent');
         const directorAnalysisList = document.getElementById('directorAnalysis');
         const actorAnalysisList = document.getElementById('actorAnalysis');
+        const genreAnalysisList = document.getElementById('genreAnalysis');
+        const decadeAnalysisList = document.getElementById('decadeAnalysis');
         const notesModal = document.getElementById('notesModal');
         const notesModalTitle = document.getElementById('notesModalTitle');
         const notesModalTextarea = document.getElementById('notesModalTextarea');
@@ -672,7 +711,7 @@
                 populateGenreFilter();
                 filterAndDisplayWatchedMovies();
                 filterAndDisplayDvds();
-                generateAnalysis();
+                generateAnalysis(); // Analiz panosu verileri çekilince güncellenir
                 if(snapshot.empty) { watchedListContainer.innerHTML = `<div class="text-center py-10 px-6 bg-gray-950 border border-gray-800 rounded-lg"><p class="text-gray-400">Henüz izlediğiniz bir film eklemediniz.</p></div>`; }
             }, (error) => { console.error("Error listening to movie collection:", error); });
 
@@ -990,536 +1029,6 @@
             }
         }
 
-        function displayDvd(dvd) {
-            const posterPath = dvd.posterPath ? `https://image.tmdb.org/t/p/w500${dvd.posterPath}` : 'https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';
-            const dvdElement = document.createElement('div');
-            dvdElement.className = 'relative group rounded-lg overflow-hidden shadow-lg border border-gray-800';
-            let addedAtStr = formatDate(dvd.addedAt);
-            
-            const isWatched = watchedMoviesList.some(m => String(m.tmdbId) === String(dvd.tmdbId));
-
-            dvdElement.innerHTML = `
-                <img src="${posterPath}" alt="${dvd.title}" class="w-full h-full object-cover rounded-lg" loading="lazy">
-                
-                ${isWatched ? `
-                <div class="absolute top-2 right-2 bg-green-500 text-black p-1 rounded-full shadow-lg z-10" title="İzlendi (Film Günlüğünde Var)">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                    </svg>
-                </div>` : ''}
-
-                <div class="absolute inset-0 bg-black/85 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2 rounded-lg text-center">
-                    <p class="text-white font-bold text-sm">${dvd.title}</p>
-                    ${addedAtStr ? `<p class="text-gray-400 text-xs mt-1">${addedAtStr}</p>` : ''}
-                    <div class="mt-2 flex flex-wrap justify-center gap-1.5">
-                        <button class="info-dvd-btn bg-yellow-500 hover:bg-yellow-400 text-black p-2 rounded-full font-bold" data-tmdb-id="${dvd.tmdbId}" title="Bilgi">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
-                              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                            </svg>
-                        </button>
-                        <button class="change-dvd-poster-btn bg-gray-800 hover:bg-gray-700 text-yellow-400 p-2 rounded-full border border-gray-700" data-doc-id="${dvd.id}" data-tmdb-id="${dvd.tmdbId}" data-collection="dvd_collection" title="Kapak Resmini Değiştir">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
-                            </svg>
-                        </button>
-                        <button class="delete-dvd-btn bg-red-900/60 hover:bg-red-700 text-white p-2 rounded-full border border-red-500/40" data-doc-id="${dvd.id}" title="Koleksiyondan Sil">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
-                              <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            `;
-            dvdListContainer.appendChild(dvdElement);
-        }
-
-        async function addDvdToFirestore(dvdData) {
-            if (!userId) return { status: 'error' };
-            const dvdCollection = collection(db, 'artifacts', appId, 'users', userId, 'dvd_collection');
-            const q = query(dvdCollection, where("tmdbId", "==", dvdData.tmdbId));
-            const querySnapshot = await getDocs(q);
-            if (!querySnapshot.empty) { return { status: 'duplicate' }; }
-            
-            const details = await getMovieDetails(dvdData.tmdbId);
-            let director = '';
-            let cast = [];
-            let releaseYear = dvdData.releaseYear || 'N/A';
-            let title = decodeURIComponent(dvdData.title);
-
-            if (details) {
-                if (!dvdData.releaseYear && details.release_date) {
-                    releaseYear = details.release_date.split('-')[0];
-                }
-                if (isNonLatin(title) && details.getEnTitle && !isNonLatin(details.getEnTitle)) {
-                    title = `${details.getEnTitle} (${title})`;
-                }
-                const trCrew = details.credits ? details.credits.crew || [] : [];
-                const enCrew = details.getEnCredits ? details.getEnCredits.crew || [] : [];
-                const trCast = details.credits ? details.credits.cast || [] : [];
-                const enCast = details.getEnCredits ? details.getEnCredits.cast || [] : [];
-
-                const trDirectorObj = trCrew.find(p => p.job === 'Director');
-                const enDirectorObj = enCrew.find(p => p.job === 'Director');
-                director = getProcessedPersonName(trDirectorObj, enDirectorObj);
-
-                const maxCast = Math.max(trCast.length, enCast.length);
-                for (let i = 0; i < Math.min(3, maxCast); i++) {
-                    const actorName = getProcessedPersonName(trCast[i], enCast[i]);
-                    if (actorName) cast.push(actorName);
-                }
-            }
-            
-            const dataToSave = {
-                title: title,
-                posterPath: dvdData.posterPath,
-                tmdbId: dvdData.tmdbId,
-                addedAt: dvdData.addedAt || new Date().toISOString(),
-                releaseYear: releaseYear,
-                director: director,
-                cast: cast
-            };
-
-            try { 
-                await addDoc(dvdCollection, dataToSave); 
-                return { status: 'success' };
-            } catch (error) { 
-                console.error("Error adding DVD: ", error);
-                return { status: 'error' };
-            }
-        }
-
-        async function deleteDvdFromFirestore(docId) {
-            if (!userId) return;
-            try {
-                const dvdDocRef = doc(db, 'artifacts', appId, 'users', userId, 'dvd_collection', docId);
-                await deleteDoc(dvdDocRef);
-                showNotification("DVD koleksiyondan silindi.", false);
-            } catch(error) {
-                console.error("Error deleting DVD:", error);
-                showNotification("DVD silinirken bir hata oluştu.", true);
-            }
-        }
-
-        // İZLEME LİSTESİ FİLTRELEME
-        function filterAndDisplayWatchlist() {
-            const filterText = normalizeSearchText(watchlistFilterInput.value);
-            const filteredWatchlist = watchlistMovies.filter(movie => {
-                const titleMatch = normalizeSearchText(movie.title).includes(filterText);
-                const directorMatch = movie.director ? normalizeSearchText(movie.director).includes(filterText) : false;
-                const castMatch = movie.cast ? movie.cast.some(actor => normalizeSearchText(actor).includes(filterText)) : false;
-                const genreMatch = movie.genres ? movie.genres.some(genre => normalizeSearchText(genre).includes(filterText)) : false;
-
-                return titleMatch || directorMatch || castMatch || genreMatch;
-            });
-            
-            watchlistContainer.innerHTML = '';
-            if (filteredWatchlist.length === 0) {
-                if (watchlistMovies.length > 0) {
-                    watchlistContainer.innerHTML = `<p class="col-span-full text-center text-gray-500">Arama kriterlerinize uygun film bulunamadı.</p>`;
-                } else {
-                    watchlistContainer.innerHTML = `<p class="col-span-full text-center text-gray-500">İzleme listeniz boş.</p>`;
-                }
-                return;
-            }
-            
-            filteredWatchlist.sort((a,b) => getSortableDate(b.addedAt) - getSortableDate(a.addedAt)).forEach(movie => {
-                const posterPath = movie.posterPath ? `https://image.tmdb.org/t/p/w500${movie.posterPath}` : 'https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';
-                const movieElement = document.createElement('div');
-                movieElement.className = 'relative group rounded-lg overflow-hidden border border-gray-800 shadow-lg';
-                let addedAtStr = formatDate(movie.addedAt);
-                movieElement.innerHTML = `
-                    <img src="${posterPath}" alt="${movie.title}" class="w-full h-full object-cover rounded-lg" loading="lazy">
-                    <div class="absolute inset-0 bg-black/85 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2 rounded-lg text-center">
-                        <p class="text-white font-bold text-sm">${movie.title}</p>
-                        ${movie.director ? `<p class="text-gray-300 text-xs mt-0.5">${movie.director}</p>` : ''}
-                        ${addedAtStr ? `<p class="text-gray-400 text-xs mt-1">${addedAtStr}</p>` : ''}
-                        <div class="mt-2 flex gap-2">
-                            <button class="mark-as-watched-btn bg-yellow-500 hover:bg-yellow-400 text-black font-bold p-2 rounded-full" data-doc-id="${movie.id}" title="İzledim Olarak İşaretle">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
-                            </button>
-                            <button class="info-watchlist-btn bg-gray-800 hover:bg-gray-700 text-yellow-400 p-2 rounded-full border border-gray-700" data-tmdb-id="${movie.tmdbId}" title="Bilgi">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
-                            </button>
-                            <button class="delete-watchlist-item-btn bg-red-900/60 hover:bg-red-700 text-white p-2 rounded-full border border-red-500/40" data-doc-id="${movie.id}" title="Listeden Sil">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
-                            </button>
-                        </div>
-                    </div>
-                `;
-                watchlistContainer.appendChild(movieElement);
-            });
-        }
-
-        // İZLEME LİSTESİNE EKLERKEN DETAYLARI ÇEKME
-        async function addMovieToWatchlist(movieData) {
-            if (!userId) return { status: 'error' };
-            const watchlistCollection = collection(db, 'artifacts', appId, 'users', userId, 'watchlist');
-            const q = query(watchlistCollection, where("tmdbId", "==", movieData.tmdbId));
-            const querySnapshot = await getDocs(q);
-            if (!querySnapshot.empty) { return { status: 'duplicate' }; }
-
-            // Detayları çekerek (Yönetmen, Oyuncu, Tür) veritabanına ekliyoruz
-            const details = await getMovieDetails(movieData.tmdbId);
-            if (details) {
-                movieData.genres = details.genres ? details.genres.map(g => g.name) : [];
-                
-                if (isNonLatin(movieData.title) && details.getEnTitle && !isNonLatin(details.getEnTitle)) {
-                    movieData.title = `${details.getEnTitle} (${movieData.title})`;
-                }
-
-                const trCrew = details.credits ? details.credits.crew || [] : [];
-                const enCrew = details.getEnCredits ? details.getEnCredits.crew || [] : [];
-                const trCast = details.credits ? details.credits.cast || [] : [];
-                const enCast = details.getEnCredits ? details.getEnCredits.cast || [] : [];
-
-                const getRole = (job) => {
-                    const trObj = trCrew.find(p => p.job === job);
-                    const enObj = enCrew.find(p => p.job === job);
-                    return getProcessedPersonName(trObj, enObj);
-                };
-                movieData.director = getRole('Director');
-
-                const topCast = [];
-                const maxCast = Math.max(trCast.length, enCast.length);
-                for (let i = 0; i < Math.min(3, maxCast); i++) {
-                    const name = getProcessedPersonName(trCast[i], enCast[i]);
-                    if (name) topCast.push(name);
-                }
-                movieData.cast = topCast;
-            }
-
-            try { 
-                await addDoc(watchlistCollection, movieData); 
-                return { status: 'success' };
-            } catch (error) { 
-                console.error("Error adding to watchlist: ", error);
-                return { status: 'error' };
-            }
-        }
-        
-        async function deleteMovieFromWatchlist(docId) {
-            if (!userId) return;
-            try {
-                const watchlistDocRef = doc(db, 'artifacts', appId, 'users', userId, 'watchlist', docId);
-                await deleteDoc(watchlistDocRef);
-                showNotification("Film izleme listesinden silindi.", false);
-            } catch(error) {
-                console.error("Error deleting from watchlist:", error);
-                showNotification("Film silinirken bir hata oluştu.", true);
-            }
-        }
-
-        async function markAsWatched(watchlistDocId) {
-             if (!userId) return;
-             const movieToMove = watchlistMovies.find(m => m.id === watchlistDocId);
-             if (!movieToMove) {
-                 showNotification("Taşınacak film bulunamadı.", true);
-                 return;
-             }
-             const addResult = await addMovieToFirestore({
-                 tmdbId: movieToMove.tmdbId,
-                 title: movieToMove.title,
-                 posterPath: movieToMove.posterPath,
-                 releaseYear: movieToMove.releaseYear,
-                 notes: '',
-                 addedAt: new Date().toISOString()
-             });
-
-             if (addResult.status === 'success') {
-                 showNotification(`"${movieToMove.title}" izlenenler listesine eklendi.`, false);
-                 await deleteMovieFromWatchlist(watchlistDocId);
-             } else if (addResult.status === 'duplicate') {
-                 showNotification(`"${movieToMove.title}" zaten izlenenler listesinde.`, true);
-                 await deleteMovieFromWatchlist(watchlistDocId);
-             } else {
-                 showNotification("Film izlenenlere eklenirken bir hata oluştu.", true);
-             }
-        }
-
-        async function handleUpdateMovieDetails(docId, tmdbId) {
-            if (!userId) return;
-            showNotification("Film bilgileri güncelleniyor...", false);
-            const details = await getMovieDetails(tmdbId);
-            if (!details) {
-                showNotification("Detaylar alınamadı.", true);
-                return;
-            }
-
-            const movieDocRef = doc(db, 'artifacts', appId, 'users', userId, 'movies', docId);
-            const updateData = {};
-            
-            updateData.genres = details.genres ? details.genres.map(g => g.name) : [];
-            updateData.voteAverage = details.vote_average || 0;
-            
-            if (details.title) {
-                let titleStr = details.title;
-                if (isNonLatin(titleStr) && details.getEnTitle && !isNonLatin(details.getEnTitle)) {
-                    titleStr = `${details.getEnTitle} (${titleStr})`;
-                }
-                updateData.title = titleStr;
-            }
-
-            const trCrew = details.credits ? details.credits.crew || [] : [];
-            const enCrew = details.getEnCredits ? details.getEnCredits.crew || [] : [];
-            const trCast = details.credits ? details.credits.cast || [] : [];
-            const enCast = details.getEnCredits ? details.getEnCredits.cast || [] : [];
-
-            const getRole = (job, dept) => {
-                const trObj = trCrew.find(p => job ? p.job === job : p.department === dept);
-                const enObj = enCrew.find(p => job ? p.job === job : p.department === dept);
-                return getProcessedPersonName(trObj, enObj);
-            };
-
-            updateData.director = getRole('Director', null);
-            updateData.writer = getRole(null, 'Writing');
-            updateData.dop = getRole('Director of Photography', null);
-            updateData.producer = getRole('Producer', null);
-
-            const topCast = [];
-            const maxCast = Math.max(trCast.length, enCast.length);
-            for (let i = 0; i < Math.min(3, maxCast); i++) {
-                const actorName = getProcessedPersonName(trCast[i], enCast[i]);
-                if (actorName) topCast.push(actorName);
-            }
-            updateData.cast = topCast;
-
-            let providers = [];
-            if (details['watch/providers']?.results?.TR?.flatrate) {
-                providers = details['watch/providers'].results.TR.flatrate.map(p => ({ 
-                    provider_id: p.provider_id, 
-                    provider_name: p.provider_name, 
-                    logo_path: p.logo_path 
-                }));
-            }
-            updateData.watchProviders = providers;
-
-            try {
-                await updateDoc(movieDocRef, updateData);
-                showNotification("Film bilgileri güncellendi!", false);
-            } catch (error) {
-                console.error("Error updating movie details:", error);
-                showNotification("Güncelleme sırasında bir hata oluştu.", true);
-            }
-        }
-
-        async function handleUpdateDvdDetails(docId, tmdbId) {
-            if (!userId) return;
-            
-            const details = await getMovieDetails(tmdbId);
-            if (!details) {
-                console.error(`Detaylar alınamadı: ${tmdbId}`);
-                return false;
-            }
-
-            const dvdDocRef = doc(db, 'artifacts', appId, 'users', userId, 'dvd_collection', docId);
-            const updateData = {};
-            
-            if (details.release_date) {
-                updateData.releaseYear = details.release_date.split('-')[0];
-            }
-
-            if (details.title) {
-                let titleStr = details.title;
-                if (isNonLatin(titleStr) && details.getEnTitle && !isNonLatin(details.getEnTitle)) {
-                    titleStr = `${details.getEnTitle} (${titleStr})`;
-                }
-                updateData.title = titleStr;
-            }
-
-            const trCrew = details.credits ? details.credits.crew || [] : [];
-            const enCrew = details.getEnCredits ? details.getEnCredits.crew || [] : [];
-            const trCast = details.credits ? details.credits.cast || [] : [];
-            const enCast = details.getEnCredits ? details.getEnCredits.cast || [] : [];
-
-            const trDirectorObj = trCrew.find(p => p.job === 'Director');
-            const enDirectorObj = enCrew.find(p => p.job === 'Director');
-            updateData.director = getProcessedPersonName(trDirectorObj, enDirectorObj);
-
-            const topCast = [];
-            const maxCast = Math.max(trCast.length, enCast.length);
-            for (let i = 0; i < Math.min(3, maxCast); i++) {
-                const actorName = getProcessedPersonName(trCast[i], enCast[i]);
-                if (actorName) topCast.push(actorName);
-            }
-            updateData.cast = topCast;
-
-            try {
-                await updateDoc(dvdDocRef, updateData);
-                return true;
-            } catch (error) {
-                console.error("Error updating DVD details:", error);
-                return false;
-            }
-        }
-
-        async function updateNotesInFirestore(docId, notes) {
-            if (!userId) return;
-            try { await updateDoc(doc(db, 'artifacts', appId, 'users', userId, 'movies', docId), { notes: notes }); showNotification("Notlar kaydedildi!", false); } catch (error) { console.error("Error updating notes: ", error); }
-        }
-
-        async function deleteMovieFromFirestore(docId) {
-            if (!userId) return;
-            try {
-                await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'movies', docId));
-                showNotification("Film başarıyla silindi.", false);
-            } catch (error) {
-                console.error("Error deleting document: ", error);
-                showNotification("Film silinirken bir hata oluştu.", true);
-            }
-        }
-        
-        function populateGenreFilter() {
-            const allGenres = new Set();
-            watchedMoviesList.forEach(movie => { if(movie.genres) movie.genres.forEach(genre => allGenres.add(genre)); });
-            genreFilter.innerHTML = '<option value="">Tüm Türler</option>';
-            Array.from(allGenres).sort().forEach(genre => { const option = document.createElement('option'); option.value = genre; option.textContent = genre; genreFilter.appendChild(option); });
-        }
-
-        function filterAndDisplayWatchedMovies() {
-            const filterText = normalizeSearchText(filterInput.value);
-            const selectedGenre = genreFilter.value;
-            const filteredMovies = watchedMoviesList.filter(movie => {
-                const titleMatch = normalizeSearchText(movie.title).includes(filterText);
-                const directorMatch = movie.director ? normalizeSearchText(movie.director).includes(filterText) : false;
-                const castMatch = movie.cast ? movie.cast.some(actor => normalizeSearchText(actor).includes(filterText)) : false;
-                const genreMatch = !selectedGenre || (movie.genres && movie.genres.includes(selectedGenre));
-                return (titleMatch || directorMatch || castMatch) && genreMatch;
-            });
-            watchedListContainer.innerHTML = '';
-            if (filteredMovies.length > 0) { filteredMovies.forEach(displayWatchedMovie); }
-            noFilterResults.style.display = filteredMovies.length === 0 && watchedMoviesList.length > 0 ? 'block' : 'none';
-        }
-        
-        function filterAndDisplayDvds() {
-            const filterText = normalizeSearchText(dvdFilterInput.value);
-            const filteredDvds = dvdCollectionList.filter(dvd => {
-                const titleMatch = normalizeSearchText(dvd.title).includes(filterText);
-                const directorMatch = dvd.director ? normalizeSearchText(dvd.director).includes(filterText) : false;
-                const castMatch = dvd.cast ? dvd.cast.some(actor => normalizeSearchText(actor).includes(filterText)) : false;
-                return titleMatch || directorMatch || castMatch;
-            });
-            dvdListContainer.innerHTML = '';
-            if (filteredDvds.length > 0) {
-                filteredDvds.sort((a,b) => getSortableDate(b.addedAt) - getSortableDate(a.addedAt)).forEach(displayDvd);
-            } else {
-                if (dvdCollectionList.length > 0) {
-                     dvdListContainer.innerHTML = `<p class="col-span-full text-center text-gray-500">Arama kriterlerinize uygun DVD bulunamadı.</p>`;
-                } else if (dvdCollectionList.length === 0) {
-                     dvdListContainer.innerHTML = `<p class="col-span-full text-center text-gray-500">Henüz koleksiyonunuza bir DVD eklemediniz.</p>`;
-                }
-            }
-        }
-        
-        function exportToCSV() {
-            if (watchedMoviesList.length === 0) { showNotification("Dışa aktarılacak film yok.", true); return; }
-            let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-            csvContent += ["Baslik", "Yil", "Yonetmen", "Turler", "Eklenme Tarihi", "Notlar"].join(",") + "\r\n";
-            watchedMoviesList.forEach(movie => {
-                const row = [
-                    `"${movie.title.replace(/"/g, '""')}"`, 
-                    movie.releaseYear, 
-                    `"${movie.director ? movie.director.replace(/"/g, '""') : ''}"`,
-                    `"${movie.genres ? movie.genres.join(', ') : ''}"`, 
-                    `"${formatDate(movie.addedAt)}"`,
-                    `"${movie.notes ? movie.notes.replace(/"/g, '""').replace(/\n/g, ' ') : ''}"`
-                ].join(",");
-                csvContent += row + "\r\n";
-            });
-            const link = document.createElement("a");
-            link.setAttribute("href", encodeURI(csvContent));
-            link.setAttribute("download", "film_gunlugum.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function exportDvdToCSV() {
-            if (dvdCollectionList.length === 0) { showNotification("Dışa aktarılacak koleksiyon filmi yok.", true); return; }
-            let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-            csvContent += ["Baslik", "Yil", "Yonetmen", "Eklenme Tarihi"].join(",") + "\r\n";
-            dvdCollectionList.forEach(dvd => {
-                const row = [
-                    `"${dvd.title.replace(/"/g, '""')}"`, 
-                    dvd.releaseYear || 'N/A', 
-                    `"${dvd.director ? dvd.director.replace(/"/g, '""') : ''}"`,
-                    `"${formatDate(dvd.addedAt)}"`
-                ].join(",");
-                csvContent += row + "\r\n";
-            });
-            const link = document.createElement("a");
-            link.setAttribute("href", encodeURI(csvContent));
-            link.setAttribute("download", "dvd_koleksiyonum.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        async function handleBulkAdd() {
-            const text = bulkAddTextarea.value.trim();
-            if (!text) { showNotification("Lütfen eklenecek film listesini girin.", true); return; }
-            const movieTitles = text.split('\n').map(line => line.split('-')[0].trim()).filter(title => title.length > 0);
-            if (movieTitles.length === 0) return;
-            bulkAddBtn.disabled = true;
-            bulkAddBtn.textContent = "İşleniyor...";
-            bulkAddStatus.innerHTML = '';
-            let addedCount = 0, duplicateCount = 0, notFoundCount = 0;
-            for (let i = 0; i < movieTitles.length; i++) {
-                const title = movieTitles[i];
-                bulkAddStatus.innerHTML = `<p>${i + 1}/${movieTitles.length} işleniyor: <strong>${title}</strong></p>`;
-                const searchData = await performMultiSearch(title);
-                if (searchData && searchData.results.length > 0) {
-                    const movie = searchData.results.find(r => r.media_type === 'movie');
-                    if (movie) {
-                        const movieData = { tmdbId: movie.id.toString(), title: movie.title, posterPath: movie.poster_path || '', releaseYear: movie.release_date ? movie.release_date.split('-')[0] : 'N/A', notes: '', addedAt: new Date().toISOString() };
-                        const result = await addMovieToFirestore(movieData);
-                        if (result.status === 'success') {
-                            addedCount++;
-                        } else if (result.status === 'duplicate') {
-                            duplicateCount++;
-                        }
-                    } else {
-                        notFoundCount++;
-                    }
-                } else {
-                    notFoundCount++;
-                }
-                await new Promise(resolve => setTimeout(resolve, 250));
-            }
-            bulkAddStatus.innerHTML = `<p class="font-bold text-white">İşlem Tamamlandı!</p><p class="text-green-400">${addedCount} film eklendi.</p><p class="text-yellow-400">${duplicateCount} film zaten listede vardı.</p><p class="text-red-400">${notFoundCount} film bulunamadı.</p>`;
-            bulkAddBtn.disabled = false;
-            bulkAddBtn.textContent = "Listeyi İçe Aktar";
-            bulkAddTextarea.value = '';
-        }
-        
-        function renderPaginationControls(page, totalPages) {
-            paginationControls.innerHTML = '';
-            if (totalPages <= 1) return;
-
-            const prevButton = document.createElement('button');
-            prevButton.textContent = 'Önceki';
-            prevButton.className = 'px-4 py-2 bg-gray-900 border border-gray-800 text-yellow-400 rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed';
-            prevButton.disabled = page === 1;
-            prevButton.addEventListener('click', () => {
-                performMultiSearch(lastSearchQuery, page - 1).then(data => displayMultiSearchResults(data));
-            });
-
-            const pageInfo = document.createElement('span');
-            pageInfo.textContent = `Sayfa ${page} / ${totalPages}`;
-            pageInfo.className = 'px-4 text-gray-300';
-            
-            const nextButton = document.createElement('button');
-            nextButton.textContent = 'Sonraki';
-            nextButton.className = 'px-4 py-2 bg-gray-900 border border-gray-800 text-yellow-400 rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed';
-            nextButton.disabled = page >= totalPages;
-            nextButton.addEventListener('click', () => {
-                performMultiSearch(lastSearchQuery, page + 1).then(data => displayMultiSearchResults(data));
-            });
-
-            paginationControls.appendChild(prevButton);
-            paginationControls.appendChild(pageInfo);
-            paginationControls.appendChild(nextButton);
-        }
-        
         function displayDvdSearchResults(results) {
             dvdSearchResultsContainer.innerHTML = '';
             if (!results || results.length === 0) {
@@ -1530,8 +1039,6 @@
             results.filter(r => r.media_type === 'movie').slice(0, 12).forEach(movie => {
                 const posterPath = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';
                 const releaseYear = movie.release_date ? movie.release_date.split('-')[0] : 'N/A';
-                
-                // DEĞİŞTİRİLDİ: Tuş afişin altında, kendi bölmesinde her zaman görünür!
                 const movieCard = `
                 <div class="bg-gray-950 border border-gray-800 rounded-lg overflow-hidden shadow-lg movie-card flex flex-col relative">
                     <div class="relative w-full h-56 bg-black flex items-center justify-center">
@@ -1559,8 +1066,6 @@
             results.filter(r => r.media_type === 'movie').slice(0, 12).forEach(movie => {
                 const posterPath = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'https://placehold.co/500x750/1f2937/4b5563?text=Poster+Yok';
                 const releaseYear = movie.release_date ? movie.release_date.split('-')[0] : 'N/A';
-                
-                // DEĞİŞTİRİLDİ: Tuş afişin altında, kendi bölmesinde her zaman görünür!
                 const movieCard = `
                 <div class="bg-gray-950 border border-gray-800 rounded-lg overflow-hidden shadow-lg movie-card flex flex-col relative">
                     <div class="relative w-full h-56 bg-black flex items-center justify-center">
@@ -1578,36 +1083,64 @@
             });
         }
         
+        // YENİLENEN ANALİZ BÖLÜMÜ
         function generateAnalysis() {
             const directorCounts = {};
             const actorCounts = {};
+            const genreCounts = {};
+            const decadeCounts = {};
 
             watchedMoviesList.forEach(movie => {
+                // Yönetmenler
                 if (movie.director) {
                     directorCounts[movie.director] = (directorCounts[movie.director] || 0) + 1;
                 }
+                // Oyuncular
                 if (movie.cast) {
                     movie.cast.forEach(actor => {
                         actorCounts[actor] = (actorCounts[actor] || 0) + 1;
                     });
                 }
+                // Türler
+                if (movie.genres) {
+                    movie.genres.forEach(genre => {
+                        genreCounts[genre] = (genreCounts[genre] || 0) + 1;
+                    });
+                }
+                // Onyıllar (Decades)
+                if (movie.releaseYear && movie.releaseYear !== 'N/A' && !isNaN(movie.releaseYear)) {
+                    const decade = Math.floor(parseInt(movie.releaseYear) / 10) * 10 + "'ler";
+                    decadeCounts[decade] = (decadeCounts[decade] || 0) + 1;
+                }
             });
 
-            renderAnalysisList(directorAnalysisList, directorCounts, 'film');
-            renderAnalysisList(actorAnalysisList, actorCounts, 'film');
+            // Özet Rakamları Güncelle
+            document.getElementById('statTotalMovies').textContent = watchedMoviesList.length;
+            document.getElementById('statUniqueDirectors').textContent = Object.keys(directorCounts).length;
+            document.getElementById('statUniqueActors').textContent = Object.keys(actorCounts).length;
+
+            renderAnalysisList(directorAnalysisList, directorCounts, 'film', true);
+            renderAnalysisList(actorAnalysisList, actorCounts, 'film', true);
+            renderAnalysisList(genreAnalysisList, genreCounts, 'film', true);
+            renderAnalysisList(decadeAnalysisList, decadeCounts, 'film', false); // Yıllara tıklamayı şimdilik kapattım karmaşa olmasın diye
         }
 
-        function renderAnalysisList(element, data, unit) {
+        function renderAnalysisList(element, data, unit, isClickable = true) {
             element.innerHTML = '';
             const sortedData = Object.entries(data).sort(([, a], [, b]) => b - a);
             if (sortedData.length === 0) {
-                element.innerHTML = `<li class="text-gray-500">Veri yok.</li>`;
+                element.innerHTML = `<li class="text-gray-500 text-sm">Veri yok.</li>`;
                 return;
             }
             sortedData.slice(0, 10).forEach(([name, count]) => {
                 const li = document.createElement('li');
-                li.className = "flex justify-between items-center bg-gray-950 border border-gray-800 p-2 rounded";
-                li.innerHTML = `<button class="text-left hover:text-yellow-400 text-gray-200 analysis-item" data-name="${name}">${name}</button><span class="font-bold text-yellow-400">${count} ${unit}</span>`;
+                li.className = "flex justify-between items-center bg-gray-900/50 border border-gray-800 p-2 rounded-lg hover:bg-gray-800 transition-colors";
+                
+                if (isClickable) {
+                    li.innerHTML = `<button class="text-left hover:text-yellow-400 text-gray-300 text-sm font-medium transition-colors analysis-item truncate pr-2" data-name="${name}" title="${name}">${name}</button><span class="font-bold text-yellow-500 bg-black px-2 py-0.5 rounded text-xs">${count}</span>`;
+                } else {
+                    li.innerHTML = `<span class="text-left text-gray-300 text-sm font-medium truncate pr-2" title="${name}">${name}</span><span class="font-bold text-yellow-500 bg-black px-2 py-0.5 rounded text-xs">${count}</span>`;
+                }
                 element.appendChild(li);
             });
         }
@@ -1718,6 +1251,27 @@
                 displayWatchlistSearchResults(data ? data.results : []);
             }
         });
+        
+        // Arama filtrelemesi artık türleri de okur (Analiz sayfasından tıklayınca çalışması için)
+        function filterAndDisplayWatchedMovies() {
+            const filterText = normalizeSearchText(filterInput.value);
+            const selectedGenre = genreFilter.value;
+            const filteredMovies = watchedMoviesList.filter(movie => {
+                const titleMatch = normalizeSearchText(movie.title).includes(filterText);
+                const directorMatch = movie.director ? normalizeSearchText(movie.director).includes(filterText) : false;
+                const castMatch = movie.cast ? movie.cast.some(actor => normalizeSearchText(actor).includes(filterText)) : false;
+                const genreTextMatch = movie.genres ? movie.genres.some(genre => normalizeSearchText(genre).includes(filterText)) : false;
+                
+                const matchesText = titleMatch || directorMatch || castMatch || genreTextMatch;
+                const matchesDropdown = !selectedGenre || (movie.genres && movie.genres.includes(selectedGenre));
+                
+                return matchesText && matchesDropdown;
+            });
+            watchedListContainer.innerHTML = '';
+            if (filteredMovies.length > 0) { filteredMovies.forEach(displayWatchedMovie); }
+            noFilterResults.style.display = filteredMovies.length === 0 && watchedMoviesList.length > 0 ? 'block' : 'none';
+        }
+        
         filterInput.addEventListener('input', filterAndDisplayWatchedMovies);
         dvdFilterInput.addEventListener('input', filterAndDisplayDvds);
         watchlistFilterInput.addEventListener('input', filterAndDisplayWatchlist);
@@ -1827,7 +1381,7 @@
             }
         });
 
-        // TÜM TIKLAMA (EKLEME/SİLME) YAKALAYICILARI (DEĞİŞTİRİLDİ: ONAY MODALI)
+        // TÜM TIKLAMA (EKLEME/SİLME) YAKALAYICILARI (ONAY MODALLI)
         document.addEventListener('click', async (e) => {
             const addBtn = e.target.closest('.add-movie-btn');
             const deleteBtn = e.target.closest('.delete-movie-btn');
